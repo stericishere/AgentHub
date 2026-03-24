@@ -1,0 +1,116 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Backgrounds */
+  --color-bg-primary: #0f1117;
+  --color-bg-secondary: #161822;
+  --color-bg-card: #1c1e2e;
+  --color-bg-hover: #252840;
+  --color-bg-active: #2a2d45;
+
+  /* Borders */
+  --color-border-default: #2e3148;
+  --color-border-light: #3a3d56;
+
+  /* Text */
+  --color-text-primary: #e4e4f0;
+  --color-text-secondary: #8b8da3;
+  --color-text-muted: #5c5e72;
+
+  /* Accent */
+  --color-accent: #6c5ce7;
+  --color-accent-light: #a29bfe;
+
+  /* Semantic */
+  --color-success: #00d68f;
+  --color-success-dim: #00d68f33;
+  --color-warning: #ffaa00;
+  --color-warning-dim: #ffaa0033;
+  --color-danger: #ff6b6b;
+  --color-danger-dim: #ff6b6b33;
+  --color-info: #339af0;
+  --color-info-dim: #339af033;
+  --color-cyan: #22d3ee;
+  --color-orange: #ff922b;
+  --color-pink: #f06595;
+
+  /* Animation */
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-pulse-fast: pulse-glow 1.5s ease-in-out infinite;
+  --animate-blink: blink 1s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Light theme overrides */
+[data-theme="light"] {
+  --color-bg-primary: #f8f9fc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-bg-hover: #f0f1f5;
+  --color-bg-active: #e8e9f0;
+  --color-border-default: #d8dae5;
+  --color-border-light: #c8cad8;
+  --color-text-primary: #1a1c2e;
+  --color-text-secondary: #5c5e72;
+  --color-text-muted: #8b8da3;
+  --color-accent: #6c5ce7;
+  --color-accent-light: #5a4bd6;
+  --color-success: #00b377;
+  --color-success-dim: #00b37722;
+  --color-warning: #e69500;
+  --color-warning-dim: #e6950022;
+  --color-danger: #e54545;
+  --color-danger-dim: #e5454522;
+  --color-info: #2b86d6;
+  --color-info-dim: #2b86d622;
+}
+
+/* Base styles */
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+/* Titlebar drag region */
+.titlebar-drag {
+  -webkit-app-region: drag;
+}
+
+.titlebar-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-light);
+}

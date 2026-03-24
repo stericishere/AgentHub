@@ -1,0 +1,44 @@
+appId: com.maestro.app
+productName: Maestro
+directories:
+  buildResources: build
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron/*'
+  - '!tests/*'
+  - '!e2e/*'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc,.env,.env.*}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json,electron.vite.config.ts}'
+  - '!{vitest.config.ts,playwright.config.ts}'
+extraResources:
+  - from: agents/
+    to: agents/
+    filter:
+      - '**/*'
+  - from: knowledge/
+    to: knowledge/
+    filter:
+      - '**/*'
+  - from: node_modules/sql.js/dist/sql-wasm.wasm
+    to: sql-wasm.wasm
+  - from: .env
+    to: .env
+    filter:
+      - .env
+win:
+  icon: build/icon.ico
+  target:
+    - nsis
+    - portable
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+mac:
+  icon: build/icon.png
+  target:
+    - dmg
+publish:
+  provider: github
+  owner: Stanshy
+  repo: agent-hub

@@ -1,0 +1,15 @@
+node_modules/
+dist/
+out/
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.local
+.DS_Store
+Thumbs.db
+.maestro-prompts/
+playwright-report/
+test-results/
+.claude/
+docs/自用/

@@ -1,0 +1,64 @@
+# 專案概述
+
+> **版本**: v1.0
+> **最後更新**: 2026-03-24
+
+---
+
+## 定位
+
+AgentHub (Maestro v2) 是「一人軟體公司」管理平台的 Electron 桌面版。透過視覺化介面管理多個 Claude Code Session（每個 Session 扮演一個 AI Agent），完成完整軟體開發生命週期。
+
+## v1 → v2 核心變化
+
+### 設計理念轉變
+
+```
+v1: GUI 管理一切 → Agent 被動執行
+v2: Harness（Skill + Hook + FileWatcher）驅動一切 → GUI 只做監控
+```
+
+### v1 問題
+
+| 問題 | 表現 | 根因 |
+|------|------|------|
+| 過重 | 33 服務、13 頁面、156 IPC、27 張表 | 什麼都想用 GUI 做 |
+| 不實用 | Notion 同步、通訊匯流排、委派解析器很少用 | 設計時想像的需求 |
+| 兩個世界 | 子專案檔案 vs GUI SQLite 互不相通 | 沒有同步機制 |
+| 無強制力 | 品質約束靠 CLAUDE.md 文字，Agent 可忽略 | 沒有 Hook 攔截 |
+
+### v2 解決方案
+
+**三層機制綁定兩個世界**：
+1. **Skill**（格式標準化）— Agent 用 `/task-done`、`/gate-record` 寫入固定格式
+2. **Hook**（系統強制）— stop-validator 攔截、pre-commit 檢查
+3. **FileWatcher**（自動同步）— chokidar 監聽 .md → 解析 → upsert SQLite → GUI 刷新
+
+### 量化精簡
+
+| 指標 | v1 | v2 |
+|------|----|----|
+| 後端服務 | 33 | ~14 |
+| 前端頁面 | 13 | 5 |
+| Pinia Store | 12 | 7 |
+| IPC handler 模組 | 17 | ~10 |
+| DB 表 | 27 | ~12 |
+| npm 依賴 | 14 | ~11 |
+
+## GUI 的 3 個操作 + 監控
+
+| 功能 | 說明 |
+|------|------|
+| **建立專案** | 設定 workDir、專案類型、引入公司模板到 .knowledge/ |
+| **引入公司模板** | 複製公司知識庫到子專案，之後本地迭代 |
+| **選 Agent 開 Session** | 選角色、開終端、開始工作 |
+| **監控**（被動） | Dashboard 顯示 Sprint 進度、任務狀態、Gate 結果（從 FileWatcher 同步） |
+
+## 子專案列表
+
+| 專案 | 類型 | 狀態 |
+|------|------|------|
+| MorningGo | SaaS 線上點餐 | 已上線 |
+| LexMind | AI 法律平台 | 開發中 |
+| VideoBrief | 影片轉文章 | 開發中 |
+| ChatPilot | LINE 聊天 AI | 開發中 |

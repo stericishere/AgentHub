@@ -1,0 +1,111 @@
+# {專案名稱} — Agent 指南
+
+> 本文件為專案索引導航，所有 Agent 執行任務前必須先閱讀本文件，再依任務需求查閱對應文件。
+
+---
+
+## 專案概述
+
+- **專案名稱**: {名稱}
+- **專案類型**: 套件/工具庫
+- **發佈平台**: {npm / PyPI / Maven Central / crates.io}
+- **目標用戶**: {描述}
+- **核心價值**: {一句話描述}
+- **開發平台**: {Windows / macOS / Linux}
+
+## 開發規則
+
+### 文件治理（最高原則）
+
+1. **文件就是法律**: 程式碼必須與規範文件一致。不一致時以規範為準。
+2. **原子性**: 每個 commit 必須同時包含程式碼變更與對應文件更新。
+3. **文件同步**: 公開 API 變更必須同步更新文件。
+4. **先確認再開發**: API 設計確認 → 核可 → 開發。
+5. **公司規範本地化**: 引用公司規範（`company://`）時，若本地 `.knowledge/` 尚無對應文件，必須先建立一份本地副本再使用。未用到的不需複製。
+6. **需求備忘統一入口**: 老闆提出的額外需求、想法，統一記錄到 `proposal/product-roadmap-draft.md` 的「未排期 Backlog」。PM 負責分類與評估，正式納入開發前須經 G0 審核。
+
+### 命名規範
+
+依語言慣例，參考公司 `coding-standards.md`。
+
+### Commit 紀律（強制）
+
+1. **一事一 commit**: 每個 commit 只做一件事（一個功能、一個修復、一個重構）。禁止「大雜燴」commit。
+2. **commit 前必過 lint + type-check**: 通過後才能 commit。CI 紅燈 = 阻塞。
+3. **commit message 格式**: `<type>(<scope>): <summary>`，type 限 feat/fix/refactor/test/docs/chore。
+4. **禁止 force push 到共用分支**: main / develop / release 分支禁止 `--force`。個人分支可用。
+5. **WIP commit 禁止合併**: 含 `WIP` / `TODO` / `FIXME` 的 commit 不得出現在合併請求中。
+6. **lockfile 必須隨 package.json 一起 commit**: 修改依賴後 lockfile 未更新 = 未完成。
+
+## 技術棧
+
+| 類型 | 技術 |
+|------|------|
+| 語言 | {TypeScript / Python / Rust} |
+| 建構 | {tsup / rollup / setuptools / cargo} |
+| 測試 | {Vitest / Pytest / cargo test} |
+| 文件 | {TypeDoc / Sphinx / rustdoc} |
+| CI | {GitHub Actions} |
+
+## 公開 API
+
+| 函數/類別 | 描述 | 優先級 |
+|-----------|------|--------|
+| {名稱} | {描述} | P0 |
+
+## 相容性
+
+- **最低版本**: {Node 18+ / Python 3.10+}
+- **平台**: {跨平台 / 限定平台}
+- **相依**: {主要相依}
+
+## 驗收標準
+
+{P0 功能驗收條件}
+
+## 常見踩坑紀錄
+
+| 問題 | 原因 | 正確做法 |
+|------|------|---------|
+| {問題描述} | {根因} | {解決方案} |
+
+## 專案文件索引
+
+| 文件 | 說明 |
+|------|------|
+| {path} | {說明} |
+
+## 團隊運作模式
+
+### 指揮鏈
+
+```
+老闆（最終決策者）
+  └─→ L1 部門領導（規劃 + Review + 回報）
+        └─→ L2 執行者（開發 + 測試 + 文件）
+```
+
+### 原則
+
+1. **逐級指揮**: 老闆 → L1 → L2，禁止跨級直接指揮
+2. **逐級回報**: L2 → L1 → 老闆，L2 不得跳過 L1 直接回報
+3. **L1 品管責任**: L1 負責內部 Review，確保品質後才提交 Gate
+4. **L2 專注執行**: L2 只負責被分派的任務範圍，不擅自擴大範圍
+
+### Sprint 執行流程
+
+Step 1-8 → 每個 Step 完成後 L1 內部 Review → Review 通過提交 Gate → 老闆一鍵審核
+
+詳見 [Sprint 規劃 SOP](C:\agent-hub\knowledge\company\sop\sprint-planning.md)
+
+## 公司知識庫
+
+> Agent 執行任務時遵循以下規範與 SOP。
+
+- [程式碼規範](C:\agent-hub\knowledge\company\standards\coding-standards.md)
+- [安全規範](C:\agent-hub\knowledge\company\standards\security-standards.md)
+- [測試規範](C:\agent-hub\knowledge\company\standards\testing-standards.md)
+- [品質 Checklist](C:\agent-hub\knowledge\company\standards\quality-checklist.md)
+- [Code Review SOP](C:\agent-hub\knowledge\company\sop\code-review.md)
+- [Sprint 規劃 SOP](C:\agent-hub\knowledge\company\sop\sprint-planning.md)
+- [Agent 團隊資源表](C:\agent-hub\knowledge\company\agent-roster.md)（45 位 Agent，8 部門）
