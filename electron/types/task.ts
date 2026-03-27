@@ -68,6 +68,14 @@ export interface TaskFilters {
   parentTaskId?: string;
 }
 
+/** @deprecated Use skill-based task creation instead */
+export interface DelegationCommand {
+  targetAgent: string;
+  task: string;
+  context?: string;
+  priority?: TaskPriority | string;
+}
+
 export type SprintStatus = 'planning' | 'active' | 'review' | 'completed';
 export type SprintType = 'full' | 'feature' | 'bugfix' | 'release';
 

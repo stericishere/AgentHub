@@ -8,6 +8,27 @@ export interface ProjectRecord {
   updatedAt: string;
 }
 
+export interface ProjectCreateParams {
+  name: string;
+  description?: string;
+  workDir?: string;
+  template?: string;
+}
+
+export interface ProjectUpdateParams {
+  name?: string;
+  description?: string;
+  status?: ProjectRecord['status'];
+  workDir?: string;
+}
+
+export interface KnowledgeTreeNode {
+  name: string;
+  path: string;
+  type: 'file' | 'directory';
+  children?: KnowledgeTreeNode[];
+}
+
 export interface BudgetStatus {
   dailyTokensUsed: number;
   dailyTokenLimit: number;

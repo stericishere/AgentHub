@@ -12,4 +12,6 @@ Thumbs.db
 playwright-report/
 test-results/
 .claude/
-docs/自用/
+docs/
+proposal/
+.tasks/

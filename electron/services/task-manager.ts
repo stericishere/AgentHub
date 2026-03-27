@@ -7,6 +7,7 @@ import { logger } from '../utils/logger';
 import type {
   TaskRecord,
   TaskStatus,
+  TaskPriority,
   TaskCreateParams,
   TaskUpdateParams,
   TaskTransitionParams,
@@ -263,7 +264,7 @@ class TaskManager {
         description: d.context || '',
         assignedTo: d.targetAgent,
         createdBy: createdBy || null,
-        priority: d.priority || 'medium',
+        priority: (d.priority as TaskPriority) || 'medium',
       }),
     );
   }
