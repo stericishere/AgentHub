@@ -1,4 +1,5 @@
 import { app, BrowserWindow, shell, Menu, MenuItem, powerMonitor } from 'electron';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { registerAllHandlers } from './ipc';
 import { database } from './services/database';
@@ -7,6 +8,8 @@ import { sessionManager } from './services/session-manager';
 import { eventBus } from './services/event-bus';
 import { fileWatcher } from './services/file-watcher';
 import { projectSync } from './services/project-sync';
+import { hookManager } from './services/hook-manager';
+import { skillManager } from './services/skill-manager';
 import { logger } from './utils/logger';
 import { IpcChannels } from './types';
 import { trayService } from './services/tray-service';
@@ -188,6 +191,45 @@ app.whenReady().then(async () => {
   // Initialize database (async for sql.js WASM loading)
   await database.initialize();
   logger.info('Database initialized');
+
+  // Bootstrap: ensure AgentHub's own .claude/ has hooks and skills
+  try {
+    const appDir = process.cwd();
+
+    // Bootstrap hooks: inject if settings.json missing or has no hooks configured
+    const settingsPath = join(appDir, '.claude', 'settings.json');
+    let needHooks = true;
+    if (existsSync(settingsPath)) {
+      try {
+        const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+        needHooks = !settings.hooks || Object.keys(settings.hooks).length === 0;
+      } catch {
+        needHooks = true;
+      }
+    }
+    if (needHooks) {
+      hookManager.tryInjectHooks(appDir);
+      logger.info('Bootstrap: hooks injected for AgentHub');
+    }
+
+    // Bootstrap skills: deploy if .claude/commands/ missing or empty
+    const commandsDir = join(appDir, '.claude', 'commands');
+    const needSkills =
+      !existsSync(commandsDir) ||
+      readdirSync(commandsDir).filter((f) => f.endsWith('.md')).length === 0;
+    if (needSkills) {
+      const allSkills = skillManager.list();
+      const systemSkillNames = allSkills
+        .filter((s) => s.source === 'system' && s.scope === 'global')
+        .map((s) => s.name);
+      for (const name of systemSkillNames) {
+        skillManager.deploy(name, [appDir]);
+      }
+      logger.info(`Bootstrap: deployed ${systemSkillNames.length} system skills for AgentHub`);
+    }
+  } catch (err) {
+    logger.warn('Bootstrap: failed to initialize hooks/skills', err);
+  }
 
   // Load agent definitions
   agentLoader.load();
