@@ -1,6 +1,18 @@
+<div align="center">
+
 # AgentHub
 
-## 一個人，一間軟體公司。
+### 一個人，一間軟體公司。
+
+用 Claude Code 組建虛擬開發團隊，用 Harness 工程讓 AI 有紀律地工作。
+
+**[官網](https://agenthub-site-mu.vercel.app/)** · **[Claude Code Mastery](https://github.com/Stanshy/Claude-code-mastery)** · **[快速開始](#快速開始)**
+
+![Dashboard](docs/screenshots/01-dashboard.jpg)
+
+</div>
+
+---
 
 AgentHub 不是另一個 AI 聊天介面。
 
@@ -60,6 +72,8 @@ AgentHub 的思路是：**用架構約束取代文字祈禱**。
 - `/harness-audit` — 週期性健康掃描，七大原則逐項評分
 - ...共 **23 個內建 Skill**
 
+![Harness Skills](docs/screenshots/08-harness-skill.jpg)
+
 ### Hook — 自動攔截器
 
 不是事後提醒，是當場攔截。Agent 做危險操作時即時阻擋。
@@ -67,6 +81,8 @@ AgentHub 的思路是：**用架構約束取代文字祈禱**。
 - **PreToolUse**：執行指令前檢查（禁止 kill-port / --no-verify / force push main）
 - **PostToolUse**：修改檔案後提醒（改了核心服務 → 強制同步 .knowledge/ 文件）
 - **Stop**：結束前驗證（測試 + 型別檢查必須通過，否則 Agent 不准停）
+
+![Harness Hooks](docs/screenshots/09-harness-hook.jpg)
 
 ### FileWatcher — 即時同步
 
@@ -88,21 +104,45 @@ G0（需求確認）→ G1（設計審核）→ G2（程式碼審查）→ G3（
 
 沒通過就不能往下走。不是靠自律，是靠架構強制。
 
+![Gates](docs/screenshots/07-gates.jpg)
+
 ---
 
 ## 它長什麼樣？
 
-一個 Electron 桌面應用，暗色主題，10 個頁面：
+一個 Electron 桌面應用，暗色主題。
 
-- **Dashboard** — Sprint 進度、任務狀態、Gate 紀錄、活躍 Session，一目瞭然
-- **Sessions** — 每個 Agent 的工作階段，內嵌終端機即時互動
-- **Task Board** — 看板式任務管理，狀態自動流轉
-- **Harness** — Skill / Hook / 觸發紀錄，支援全域 vs 專案專用 Scope
-- **Knowledge** — 知識庫瀏覽 + 公司管理 Agent 對話
-- **Gates** — 品質關卡審核紀錄
-- **Agents** — 團隊成員總覽（PM / Tech Lead / 前端 / 後端 / 設計師...）
-- **Projects** — 子專案管理，一鍵 Scaffold 完整 Harness
-- **Settings** — 系統設定
+### Sessions — Agent 工作階段
+
+內嵌 xterm.js 終端機，直接在 GUI 中與 Claude Code Agent 互動。
+
+![Sessions](docs/screenshots/02-sessions.jpg)
+
+### Task Board — 看板式任務管理
+
+五欄看板，狀態自動流轉。點擊卡片查看完整任務詳情。
+
+![Task Board](docs/screenshots/05-taskboard.jpg)
+
+![Task Detail](docs/screenshots/06-taskboard-detail.jpg)
+
+### Projects — 子專案管理
+
+一鍵 Scaffold 完整 Harness，即時顯示任務完成率、活躍 Sprint、最新 Gate 狀態。
+
+![Projects](docs/screenshots/03-project-detail-sprints.jpg)
+
+### Agents — 團隊成員總覽
+
+每個 Agent 有自己的職責定義、權限範圍、回報對象。
+
+![Agents](docs/screenshots/11-agents.jpg)
+
+### Harness — 觸發紀錄
+
+Hook 執行歷史即時追蹤，篩選、統計、排行一目瞭然。
+
+![Trigger Logs](docs/screenshots/10-harness-trigger-logs.jpg)
 
 ---
 
@@ -384,4 +424,10 @@ MIT
 
 ---
 
+<div align="center">
+
 *Built by a one-person company, for one-person companies.*
+
+**[官網](https://agenthub-site-mu.vercel.app/)** · **[GitHub](https://github.com/Stanshy/AgentHub)** · **[Claude Code Mastery](https://github.com/Stanshy/Claude-code-mastery)**
+
+</div>
