@@ -5,6 +5,7 @@ import { useProjectsStore } from '../stores/projects';
 import { useIpc } from '../composables/useIpc';
 import type { SprintRecord } from '../stores/projects';
 import BaseTag from '../components/common/BaseTag.vue';
+import TaskDetailPanel from '../components/task/TaskDetailPanel.vue';
 
 const tasksStore = useTasksStore();
 const projectsStore = useProjectsStore();
@@ -165,6 +166,7 @@ const visibleColumns = computed(() =>
               :key="task.id"
               class="task-card"
               :class="`task-card--${task.priority}`"
+              @click="tasksStore.selectTask(task.id)"
             >
               <!-- Task title -->
               <div class="task-title">
@@ -203,6 +205,9 @@ const visibleColumns = computed(() =>
         </div>
       </div>
     </div>
+
+    <!-- Task detail side panel -->
+    <TaskDetailPanel />
   </div>
 </template>
 

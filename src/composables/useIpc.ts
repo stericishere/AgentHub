@@ -410,7 +410,7 @@ export function useIpc() {
     return maestro.hooks.toggle(params);
   }
 
-  async function getHookLogs(filters?: { hookName?: string; result?: string; limit?: number; offset?: number; projectPath?: string }) {
+  async function getHookLogs(filters?: { hookName?: string; result?: string; limit?: number; offset?: number; projectPath?: string; dateRange?: 'today' | '7d' | '30d' | 'all' }) {
     return maestro.hooks.getLogs(filters);
   }
 

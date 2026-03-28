@@ -146,7 +146,7 @@ export const useHarnessStore = defineStore('harness', () => {
     }
   }
 
-  async function fetchHookLogs(filters?: { hookName?: string; result?: string; scope?: string; projectPath?: string; limit?: number }) {
+  async function fetchHookLogs(filters?: { hookName?: string; result?: string; scope?: string; projectPath?: string; limit?: number; dateRange?: 'today' | '7d' | '30d' | 'all' }) {
     try {
       const raw = await ipc.getHookLogs(filters ?? {}) as Array<Record<string, unknown>>;
       hookLogs.value = raw.map((r) => ({

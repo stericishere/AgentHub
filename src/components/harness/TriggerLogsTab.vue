@@ -132,7 +132,7 @@ function resultLabel(result: string): string {
     <!-- Left panel -->
     <div class="panel-left">
       <!-- Filter section -->
-      <div class="filter-section" :class="{ 'filters-disabled': !hasAnyLogs }">
+      <div class="filter-section">
         <div class="filter-label">篩選條件</div>
 
         <div class="filter-group">
@@ -345,11 +345,6 @@ function resultLabel(result: string): string {
 .filter-section {
   padding: 14px;
   border-bottom: 1px solid var(--color-border-default);
-}
-
-.filters-disabled {
-  opacity: 0.5;
-  pointer-events: none;
 }
 
 .filter-group {

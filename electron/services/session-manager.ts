@@ -440,6 +440,9 @@ class SessionManager {
     // Inject hooks into child project (skills already deployed via PROJECT_CREATE → .claude/commands/)
     hookManager.tryInjectHooks(spawnCwd);
 
+    // Start watching hook execution logs for this project
+    hookManager.watchHookLogs(spawnCwd);
+
     // Spawn PTY
     // On Windows: use cmd /s /c with bare 'claude' command (let PATH resolve).
     // Only quote args that contain spaces; avoid quoting paths as cmd.exe
@@ -929,6 +932,9 @@ class SessionManager {
    * Cleanup all sessions on app exit.
    */
   cleanup(): void {
+    // Stop all hook log watchers
+    hookManager.unwatchAllHookLogs();
+
     for (const [sessionId, session] of this.sessions) {
       try {
         session.ptyProcess.kill();
@@ -1296,6 +1302,11 @@ class SessionManager {
       }
     }
     session.completionCallbacks = [];
+
+    // Stop watching hook logs for this project
+    if (session.workDir) {
+      hookManager.unwatchHookLogs(session.workDir);
+    }
 
     // Cleanup temp file
     this.cleanupTmpFile(session);

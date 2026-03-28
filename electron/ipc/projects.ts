@@ -64,6 +64,23 @@ function scaffoldCompanyRules(workDir: string): string[] {
     }
   }
 
+  // Deploy company templates (sprint-proposal, dev-plan, etc.)
+  const templatesDir = join(knowledgeDir, 'company', 'templates');
+  const destTemplatesDir = join(destDir, 'templates');
+  if (existsSync(templatesDir)) {
+    if (!existsSync(destTemplatesDir)) {
+      mkdirSync(destTemplatesDir, { recursive: true });
+    }
+    const templateFiles = readdirSync(templatesDir).filter((f) => f.endsWith('.template'));
+    for (const file of templateFiles) {
+      const destPath = join(destTemplatesDir, file);
+      if (!existsSync(destPath)) {
+        copyFileSync(join(templatesDir, file), destPath);
+        created.push(`.knowledge/templates/${file}`);
+      }
+    }
+  }
+
   return created;
 }
 

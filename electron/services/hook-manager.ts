@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync, watch, statSync, type FSWatcher } from 'fs';
 import { join, basename } from 'path';
 import { createHash } from 'crypto';
 import { logger } from '../utils/logger';
@@ -718,7 +718,7 @@ class HookManager {
   /**
    * Query hook logs with optional filters
    */
-  queryHookLogs(filters?: { hookName?: string; result?: string; limit?: number; offset?: number; projectPath?: string }): HookLog[] {
+  queryHookLogs(filters?: { hookName?: string; result?: string; limit?: number; offset?: number; projectPath?: string; dateRange?: 'today' | '7d' | '30d' | 'all' }): HookLog[] {
     const conditions: string[] = [];
     const values: unknown[] = [];
 
@@ -733,6 +733,15 @@ class HookManager {
     if (filters?.projectPath) {
       conditions.push('project_path = ?');
       values.push(filters.projectPath);
+    }
+    if (filters?.dateRange && filters.dateRange !== 'all') {
+      if (filters.dateRange === 'today') {
+        conditions.push("trigger_time >= date('now', 'start of day')");
+      } else if (filters.dateRange === '7d') {
+        conditions.push("trigger_time >= date('now', '-7 days')");
+      } else if (filters.dateRange === '30d') {
+        conditions.push("trigger_time >= date('now', '-30 days')");
+      }
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -767,6 +776,125 @@ class HookManager {
       passed:  Number(row?.passed  ?? 0),
       warned:  Number(row?.warned  ?? 0),
     };
+  }
+
+  // ── Hook execution log file watcher ──
+
+  private logWatchers: Map<string, FSWatcher> = new Map();
+  private logOffsets: Map<string, number> = new Map();
+
+  /**
+   * Start watching a project's hook-execution.jsonl for new log entries.
+   * Called when a session is spawned for a project.
+   */
+  watchHookLogs(workDir: string): void {
+    const logFile = join(workDir, '.claude', 'hook-execution.jsonl');
+    const normalized = logFile.replace(/\\/g, '/');
+
+    // Already watching
+    if (this.logWatchers.has(normalized)) return;
+
+    // Ensure .claude/ directory exists
+    const claudeDir = join(workDir, '.claude');
+    if (!existsSync(claudeDir)) {
+      mkdirSync(claudeDir, { recursive: true });
+    }
+
+    // If log file exists, skip existing content (set offset to current size)
+    if (existsSync(logFile)) {
+      try {
+        this.logOffsets.set(normalized, statSync(logFile).size);
+      } catch {
+        this.logOffsets.set(normalized, 0);
+      }
+    } else {
+      this.logOffsets.set(normalized, 0);
+    }
+
+    try {
+      // Watch the .claude directory for changes to hook-execution.jsonl
+      const watcher = watch(claudeDir, (_eventType, filename) => {
+        if (filename === 'hook-execution.jsonl') {
+          this.processNewLogEntries(logFile, normalized, workDir);
+        }
+      });
+      this.logWatchers.set(normalized, watcher);
+      logger.info(`Watching hook execution logs: ${logFile}`);
+    } catch (err) {
+      logger.warn(`Failed to watch hook log file: ${logFile}`, err);
+    }
+  }
+
+  /**
+   * Stop watching a project's hook log file.
+   */
+  unwatchHookLogs(workDir: string): void {
+    const logFile = join(workDir, '.claude', 'hook-execution.jsonl').replace(/\\/g, '/');
+    const watcher = this.logWatchers.get(logFile);
+    if (watcher) {
+      watcher.close();
+      this.logWatchers.delete(logFile);
+      this.logOffsets.delete(logFile);
+      logger.info(`Stopped watching hook logs: ${logFile}`);
+    }
+  }
+
+  /**
+   * Stop all hook log watchers.
+   */
+  unwatchAllHookLogs(): void {
+    for (const [key, watcher] of this.logWatchers) {
+      watcher.close();
+      this.logOffsets.delete(key);
+    }
+    this.logWatchers.clear();
+  }
+
+  /**
+   * Read new lines from the log file and insert into DB.
+   */
+  private processNewLogEntries(logFile: string, key: string, workDir: string): void {
+    if (!existsSync(logFile)) return;
+
+    try {
+      const currentSize = statSync(logFile).size;
+      const lastOffset = this.logOffsets.get(key) ?? 0;
+
+      if (currentSize <= lastOffset) return;
+
+      // Read only the new bytes
+      const fd = require('fs').openSync(logFile, 'r');
+      const buffer = Buffer.alloc(currentSize - lastOffset);
+      require('fs').readSync(fd, buffer, 0, buffer.length, lastOffset);
+      require('fs').closeSync(fd);
+
+      this.logOffsets.set(key, currentSize);
+
+      const newContent = buffer.toString('utf-8');
+      const lines = newContent.split('\n').filter((line: string) => line.trim());
+
+      for (const line of lines) {
+        try {
+          const entry = JSON.parse(line);
+          if (entry.hook && entry.type && entry.result) {
+            this.logHookTrigger({
+              hookName: entry.hook,
+              hookType: entry.type,
+              triggerReason: entry.reason || undefined,
+              result: entry.result,
+              projectPath: workDir,
+              scope: 'project',
+            });
+            logger.debug(`Hook log ingested: ${entry.hook} → ${entry.result}`);
+          }
+        } catch {
+          // Skip malformed lines
+          logger.debug(`Skipping malformed hook log line: ${line.slice(0, 100)}`);
+        }
+      }
+    } catch (err) {
+      logger.warn(`Error processing hook log entries: ${err}`);
+    }
   }
 
   /**

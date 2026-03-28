@@ -177,7 +177,7 @@ interface MaestroApi {
     update: (params: { name: string; type: string; matcher: string; script: string; scope?: string; projectPath?: string }) => Promise<{ success: boolean }>;
     delete: (params: { name: string; scope?: string; projectPath?: string }) => Promise<{ success: boolean }>;
     toggle: (params: { name: string; enabled: boolean; scope?: string; projectPath?: string }) => Promise<{ success: boolean }>;
-    getLogs: (filters?: { hookName?: string; result?: string; limit?: number; offset?: number; projectPath?: string }) => Promise<Array<{
+    getLogs: (filters?: { hookName?: string; result?: string; limit?: number; offset?: number; projectPath?: string; dateRange?: 'today' | '7d' | '30d' | 'all' }) => Promise<Array<{
       id: number;
       hook_name: string;
       hook_type: string;
