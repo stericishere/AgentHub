@@ -11,7 +11,13 @@ Thumbs.db
 .maestro-prompts/
 playwright-report/
 test-results/
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+!.claude/skills/
+.claude/settings.local.json
+.claude/hook-execution.jsonl
+.claude/commands/
 docs/*
 !docs/screenshots/
 proposal/
