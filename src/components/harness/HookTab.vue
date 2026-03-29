@@ -8,10 +8,10 @@
           v-model="store.searchQuery"
           class="search-input"
           type="text"
-          placeholder="搜尋 Hook..."
+          :placeholder="t('harness.hook.searchPlaceholder')"
         />
         <select v-model="store.projectFilter" class="project-filter">
-          <option value="all">全部</option>
+          <option value="all">{{ t('harness.hook.filterAll') }}</option>
           <option
             v-for="proj in projectPaths"
             :key="proj"
@@ -25,8 +25,8 @@
         <!-- Empty state -->
         <div v-if="store.filteredHooks.length === 0" class="list-empty">
           <span class="list-empty-icon">🪝</span>
-          <span class="list-empty-text">尚無 Hook</span>
-          <span class="list-empty-sub">在 .claude/settings.json 中的 hooks 欄位配置 Hook 規則</span>
+          <span class="list-empty-text">{{ t('harness.hook.noHooks') }}</span>
+          <span class="list-empty-sub">{{ t('harness.hook.noHooksDesc') }}</span>
         </div>
 
         <!-- Items -->
@@ -58,7 +58,7 @@
                 class="tag"
                 :class="hook.scope === 'global' ? 'tag-scope-global' : 'tag-scope-project'"
               >
-                {{ hook.scope === 'global' ? '全域' : (hook.projectPath ?? hook.scope) }}
+                {{ hook.scope === 'global' ? t('harness.hook.scopeGlobal') : (hook.projectPath ?? hook.scope) }}
               </span>
             </div>
           </div>
@@ -71,7 +71,7 @@
       <!-- No selection -->
       <div v-if="!store.selectedHook" class="no-selection">
         <span class="no-selection-icon">🪝</span>
-        <span class="no-selection-title">從左側選擇一個 Hook 查看詳情</span>
+        <span class="no-selection-title">{{ t('harness.hook.selectPrompt') }}</span>
       </div>
 
       <!-- Selected Hook Detail — always preview -->
@@ -88,17 +88,17 @@
           <div class="detail-meta-row">
             <span class="meta-label">Matcher</span>
             <code class="meta-matcher">{{ store.selectedHook.matcher }}</code>
-            <span class="meta-status status-enabled">已啟用</span>
+            <span class="meta-status status-enabled">{{ t('harness.hook.enabled') }}</span>
           </div>
         </div>
 
         <!-- Detail Body -->
         <div class="detail-body">
           <div class="md-h1">{{ store.selectedHook.name }}</div>
-          <p class="md-p">此 Hook 在 {{ store.selectedHook.hookType }} 事件觸發時執行攔截邏輯。</p>
+          <p class="md-p">{{ t('harness.hook.hookDesc', { hookType: store.selectedHook.hookType }) }}</p>
           <hr class="md-divider" />
 
-          <div class="md-h2">類型</div>
+          <div class="md-h2">{{ t('harness.hook.sectionType') }}</div>
           <div class="md-section-row">
             <span
               class="tag"
@@ -107,19 +107,19 @@
             <span class="md-p">{{ hookTypeDescription(store.selectedHook.hookType) }}</span>
           </div>
 
-          <div class="md-h2">Matcher 規則</div>
+          <div class="md-h2">{{ t('harness.hook.sectionMatcher') }}</div>
           <pre class="md-block">{{ formatMatcherJson(store.selectedHook.matcher) }}</pre>
 
-          <div class="md-h2">處理邏輯</div>
+          <div class="md-h2">{{ t('harness.hook.sectionLogic') }}</div>
           <ul class="md-list">
-            <li>接收工具呼叫事件</li>
-            <li>比對 Matcher 規則：<code>{{ store.selectedHook.matcher }}</code></li>
-            <li>執行 Hook 腳本並返回結果</li>
-            <li>依結果決定阻擋或放行</li>
+            <li>{{ t('harness.hook.logicStep1') }}</li>
+            <li>{{ t('harness.hook.logicStep2') }}<code>{{ store.selectedHook.matcher }}</code></li>
+            <li>{{ t('harness.hook.logicStep3') }}</li>
+            <li>{{ t('harness.hook.logicStep4') }}</li>
           </ul>
 
           <template v-if="store.selectedHook.script">
-            <div class="md-h2">Hook 腳本</div>
+            <div class="md-h2">{{ t('harness.hook.sectionScript') }}</div>
             <pre class="md-block md-block-script">{{ store.selectedHook.script }}</pre>
           </template>
         </div>
@@ -127,15 +127,15 @@
         <!-- Detail Footer -->
         <div class="detail-footer">
           <div class="footer-row">
-            <span class="footer-label">設定檔</span>
+            <span class="footer-label">{{ t('harness.hook.footerConfigFile') }}</span>
             <code class="footer-value">.claude/settings.json</code>
           </div>
           <div class="footer-row">
-            <span class="footer-label">最後修改</span>
+            <span class="footer-label">{{ t('harness.hook.footerLastModified') }}</span>
             <span class="footer-value">{{ store.selectedHook.updatedAt ?? '—' }}</span>
           </div>
           <div class="footer-row">
-            <span class="footer-label">觸發次數</span>
+            <span class="footer-label">{{ t('harness.hook.footerTriggerCount') }}</span>
             <span class="footer-value">{{ store.selectedHook.triggerCount ?? 0 }}</span>
           </div>
         </div>
@@ -146,8 +146,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useHarnessStore } from '../../stores/harness';
 
+const { t } = useI18n();
 const store = useHarnessStore();
 
 // Derive unique project paths from all hooks (same pattern as SkillTab)
@@ -160,7 +162,7 @@ const projectPaths = computed(() => {
 });
 
 function projLabel(path?: string): string {
-  if (!path) return '未知專案';
+  if (!path) return t('harness.hook.unknownProject');
   const parts = path.replace(/\\/g, '/').split('/');
   return parts[parts.length - 1] || path;
 }
@@ -172,9 +174,9 @@ function hookTypeClass(hookType: 'PreToolUse' | 'PostToolUse' | 'Stop'): string 
 }
 
 function hookTypeDescription(hookType: 'PreToolUse' | 'PostToolUse' | 'Stop'): string {
-  if (hookType === 'PreToolUse') return '在工具呼叫執行前觸發，可攔截或放行。';
-  if (hookType === 'PostToolUse') return '在工具呼叫完成後觸發，可記錄或後處理。';
-  return '在 Agent 停止時觸發，可做清理或通知。';
+  if (hookType === 'PreToolUse') return t('harness.hook.typeDescPreToolUse');
+  if (hookType === 'PostToolUse') return t('harness.hook.typeDescPostToolUse');
+  return t('harness.hook.typeDescStop');
 }
 
 function formatMatcherJson(matcher: string): string {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import SessionCard from './SessionCard.vue';
 import type { ActiveSession, LayoutMode } from '../../stores/sessions';
 
@@ -18,6 +19,8 @@ const emit = defineEmits<{
   assignTask: [session: ActiveSession];
   requestSummary: [session: ActiveSession];
 }>();
+
+const { t } = useI18n();
 
 const gridClass = computed(() => {
   switch (props.layout) {
@@ -42,7 +45,7 @@ const isCompact = computed(() => props.layout === 'list');
 
 <template>
   <div v-if="sessions.length === 0" class="session-grid__empty">
-    尚未有執行中的工作階段
+    {{ $t('sessions.grid.empty') }}
   </div>
 
   <div v-else class="session-grid" :class="[gridClass, gapClass]">

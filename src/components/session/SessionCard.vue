@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import StatusDot from '../common/StatusDot.vue';
 import SessionTerminal from './SessionTerminal.vue';
 import type { ActiveSession } from '../../stores/sessions';
@@ -22,25 +23,13 @@ const emit = defineEmits<{
   requestSummary: [session: ActiveSession];
 }>();
 
+const { t } = useI18n();
 const tasksStore = useTasksStore();
 
 const linkedTask = computed(() => {
   if (!props.session.taskId) return null;
   return tasksStore.tasks.find((t) => t.id === props.session.taskId) || null;
 });
-
-const statusLabel: Record<string, string> = {
-  starting: '啟動中',
-  running: '執行中',
-  thinking: '思考中',
-  executing_tool: '執行工具',
-  awaiting_approval: '等待核准',
-  waiting_input: '等待輸入',
-  summarizing: '產生摘要中...',
-  completed: '已完成',
-  failed: '失敗',
-  stopped: '已停止',
-};
 
 const statusDotMapping = computed(() => {
   const s = props.session.status;
@@ -122,16 +111,16 @@ const isRunning = computed(() => {
     <button
       v-if="isRunning"
       class="session-row__btn session-row__btn--stop"
-      :title="isSummarizing ? '強制停止' : '停止'"
+      :title="isSummarizing ? $t('sessions.card.forceStop') : $t('sessions.card.stop')"
       @click.stop="emit('stop', session.sessionId)"
     >
       <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><rect width="10" height="10" rx="1.5"/></svg>
-      <span v-if="isSummarizing" class="session-row__btn-label">強制</span>
+      <span v-if="isSummarizing" class="session-row__btn-label">{{ $t('sessions.card.forceStopLabel') }}</span>
     </button>
     <button
       v-if="!isRunning"
       class="session-row__btn session-row__btn--remix"
-      title="重新執行"
+      :title="$t('sessions.card.remix')"
       @click.stop="emit('remix', session)"
     >
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
@@ -169,17 +158,17 @@ const isRunning = computed(() => {
         <button
           v-if="isRunning"
           class="session-card__btn session-card__btn--stop"
-          :title="isSummarizing ? '強制停止' : '停止'"
+          :title="isSummarizing ? $t('sessions.card.forceStop') : $t('sessions.card.stop')"
           @click.stop="emit('stop', session.sessionId)"
         >
           <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor"><rect width="10" height="10" rx="1.5"/></svg>
-          <span v-if="isSummarizing" class="session-card__btn-label">強制</span>
+          <span v-if="isSummarizing" class="session-card__btn-label">{{ $t('sessions.card.forceStopLabel') }}</span>
         </button>
         <!-- Remix button -->
         <button
           v-if="!isRunning"
           class="session-card__btn session-card__btn--remix"
-          title="重新執行"
+          :title="$t('sessions.card.remix')"
           @click.stop="emit('remix', session)"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
@@ -225,22 +214,22 @@ const isRunning = computed(() => {
           class="session-card__footer-btn session-card__footer-btn--accent"
           @click.stop="emit('delegation', session)"
         >
-          傳送指令
+          {{ $t('sessions.card.delegate') }}
         </button>
         <button
           class="session-card__footer-btn session-card__footer-btn--accent"
           @click.stop="emit('assignTask', session)"
         >
-          指派任務
+          {{ $t('sessions.card.assignTask') }}
         </button>
       </div>
       <button
         class="session-card__footer-btn session-card__footer-btn--summary"
         :class="session.projectId && isRunning ? 'session-card__footer-btn--no-margin' : 'session-card__footer-btn--auto-margin'"
-        title="手動觸發摘要"
+        :title="$t('sessions.card.summaryTitle')"
         @click.stop="emit('requestSummary', session)"
       >
-        摘要
+        {{ $t('sessions.card.summary') }}
       </button>
     </div>
   </div>

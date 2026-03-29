@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseModal from '../common/BaseModal.vue';
 import BaseButton from '../common/BaseButton.vue';
 import BaseTag from '../common/BaseTag.vue';
@@ -31,6 +32,7 @@ const emit = defineEmits<{
   launched: [sessionId: string];
 }>();
 
+const { t } = useI18n();
 const agentsStore = useAgentsStore();
 const sessionsStore = useSessionsStore();
 const tasksStore = useTasksStore();
@@ -56,12 +58,12 @@ const newProjectWorkDir = ref('');
 const newProjectTemplate = ref('web-app');
 const creatingProject = ref(false);
 
-const templateOptions = [
-  { value: 'web-app', label: 'Web 應用' },
-  { value: 'api-service', label: 'API 服務' },
-  { value: 'mobile-app', label: '行動應用' },
-  { value: 'library', label: '函式庫' },
-];
+const templateOptions = computed(() => [
+  { value: 'web-app', label: t('projects.modal.templateWebApp') },
+  { value: 'api-service', label: t('projects.modal.templateApiService') },
+  { value: 'mobile-app', label: t('projects.modal.templateMobileApp') },
+  { value: 'library', label: t('projects.modal.templateLibrary') },
+]);
 
 const effectiveProjectId = computed(() =>
   props.preselectedProjectId || selectedProjectId.value || projectsStore.selectedProjectId || null,
@@ -84,7 +86,7 @@ const tasksByProject = computed(() => {
 });
 
 function projectName(projectId: string): string {
-  if (projectId === '__none__') return '未分配專案';
+  if (projectId === '__none__') return t('sessions.launcher.unassignedProject');
   const p = projectsStore.projects.find((p) => p.id === projectId);
   return p?.name || projectId.slice(0, 8);
 }
@@ -98,11 +100,11 @@ const canLaunch = computed(() => !!selectedAgentId.value);
 /** Agent is locked when pre-selected from agent page or remix */
 const agentLocked = computed(() => !!(props.preselectedAgentId || props.remixData));
 
-const modelOptions = [
-  { value: 'opus', label: 'Opus', desc: '最強大' },
-  { value: 'sonnet', label: 'Sonnet', desc: '平衡' },
-  { value: 'haiku', label: 'Haiku', desc: '快速' },
-];
+const modelOptions = computed(() => [
+  { value: 'opus', label: 'Opus', desc: t('sessions.launcher.modelOpus') },
+  { value: 'sonnet', label: 'Sonnet', desc: t('sessions.launcher.modelSonnet') },
+  { value: 'haiku', label: 'Haiku', desc: t('sessions.launcher.modelHaiku') },
+]);
 
 watch(
   () => props.show,
@@ -166,7 +168,7 @@ async function loadPromptPreview() {
     promptPreview.value = await ipc.previewPrompt(selectedAgentId.value);
     showPromptPreview.value = true;
   } catch (err) {
-    promptPreview.value = '無法載入 Prompt 預覽';
+    promptPreview.value = t('sessions.launcher.promptPreviewError');
     showPromptPreview.value = true;
   }
 }
@@ -270,25 +272,25 @@ function onAgentChange() {
   showPromptPreview.value = false;
 }
 
-const departmentLabel: Record<string, string> = {
-  engineering: '工程部',
-  design: '設計部',
-  product: '產品部',
-  marketing: '行銷部',
-  testing: '測試部',
-  'project-management': '專案管理部',
-  'studio-operations': '工作室營運',
-  company: '公司管理',
-  bonus: '特殊',
-};
+const departmentLabel = computed<Record<string, string>>(() => ({
+  engineering: t('agents.departments.engineering'),
+  design: t('agents.departments.design'),
+  product: t('agents.departments.product'),
+  marketing: t('agents.departments.marketing'),
+  testing: t('agents.departments.testing'),
+  'project-management': t('agents.departments.projectManagement'),
+  'studio-operations': t('agents.departments.studioOperations'),
+  company: t('agents.departments.company'),
+  bonus: t('agents.departments.bonus'),
+}));
 </script>
 
 <template>
-  <BaseModal :show="show" title="啟動工作階段" @close="emit('close')">
+  <BaseModal :show="show" :title="$t('sessions.launcher.title')" @close="emit('close')">
     <div class="launcher">
       <!-- Agent Selection -->
       <div class="launcher__field">
-        <label class="launcher__label">選擇代理人</label>
+        <label class="launcher__label">{{ $t('sessions.launcher.selectAgent') }}</label>
         <div v-if="agentLocked && selectedAgent" class="launcher__agent-locked">
           <span class="launcher__agent-locked-name">{{ agentsStore.displayName(selectedAgent) }}</span>
           <span class="launcher__agent-locked-id">({{ selectedAgent.id }})</span>
@@ -299,7 +301,7 @@ const departmentLabel: Record<string, string> = {
           class="launcher__select"
           @change="onAgentChange"
         >
-          <option value="" disabled>請選擇代理人...</option>
+          <option value="" disabled>{{ $t('sessions.launcher.selectAgentPlaceholder') }}</option>
           <optgroup
             v-for="[dept, agents] in agentsStore.agentsByDepartment"
             :key="dept"
@@ -321,45 +323,45 @@ const departmentLabel: Record<string, string> = {
 
       <!-- Project Selection -->
       <div v-if="!props.preselectedProjectId" class="launcher__field">
-        <label class="launcher__label">專案</label>
+        <label class="launcher__label">{{ $t('sessions.launcher.project') }}</label>
         <select
           v-model="selectedProjectId"
           class="launcher__select"
           @change="onProjectSelectChange"
         >
-          <option :value="null">所有專案</option>
+          <option :value="null">{{ $t('sessions.launcher.allProjects') }}</option>
           <option v-for="p in projectsStore.projects" :key="p.id" :value="p.id">
             {{ p.name }}
           </option>
-          <option value="__create__">+ 新專案</option>
+          <option value="__create__">+ {{ $t('projects.newProject') }}</option>
         </select>
 
         <!-- 9E: 內嵌專案建立表單 -->
         <div v-if="showCreateProject" class="launcher__create-project">
           <div class="launcher__field">
-            <label class="launcher__label launcher__label--sm">專案名稱</label>
+            <label class="launcher__label launcher__label--sm">{{ $t('projects.modal.nameLabel') }}</label>
             <input
               v-model="newProjectName"
               type="text"
-              placeholder="例：我的新專案"
+              :placeholder="$t('projects.modal.namePlaceholder')"
               class="launcher__input launcher__input--sm"
             />
           </div>
           <div class="launcher__field">
-            <label class="launcher__label launcher__label--sm">工作目錄</label>
+            <label class="launcher__label launcher__label--sm">{{ $t('projects.modal.workDirLabel') }}</label>
             <div class="launcher__workdir-row">
               <input
                 v-model="newProjectWorkDir"
                 type="text"
                 readonly
-                placeholder="選擇資料夾..."
+                :placeholder="$t('sessions.launcher.selectFolder')"
                 class="launcher__input launcher__input--sm launcher__input--flex"
               />
-              <BaseButton size="sm" @click="selectWorkDir">瀏覽</BaseButton>
+              <BaseButton size="sm" @click="selectWorkDir">{{ $t('common.browse') }}</BaseButton>
             </div>
           </div>
           <div class="launcher__field">
-            <label class="launcher__label launcher__label--sm">模板</label>
+            <label class="launcher__label launcher__label--sm">{{ $t('projects.modal.selectTemplate') }}</label>
             <select v-model="newProjectTemplate" class="launcher__select launcher__select--sm">
               <option v-for="t in templateOptions" :key="t.value" :value="t.value">
                 {{ t.label }}
@@ -373,10 +375,10 @@ const departmentLabel: Record<string, string> = {
               :disabled="!newProjectName.trim() || !newProjectWorkDir.trim() || creatingProject"
               @click="createProject"
             >
-              {{ creatingProject ? '建立中...' : '建立專案' }}
+              {{ creatingProject ? $t('sessions.launcher.creating') : $t('projects.modal.create') }}
             </BaseButton>
             <BaseButton size="sm" variant="ghost" @click="showCreateProject = false">
-              取消
+              {{ $t('common.cancel') }}
             </BaseButton>
           </div>
         </div>
@@ -384,13 +386,13 @@ const departmentLabel: Record<string, string> = {
 
       <!-- Associated Task (optional) -->
       <div class="launcher__field">
-        <label class="launcher__label">關聯任務（選填）</label>
+        <label class="launcher__label">{{ $t('sessions.launcher.associatedTask') }}</label>
         <select
           v-model="selectedTaskId"
           class="launcher__select"
           @change="onTaskSelect"
         >
-          <option :value="null">不綁定任務</option>
+          <option :value="null">{{ $t('sessions.launcher.noTask') }}</option>
           <!-- 已選專案：直接列出該專案的任務 -->
           <template v-if="effectiveProjectId">
             <option v-for="t in filteredTasks" :key="t.id" :value="t.id">
@@ -414,19 +416,19 @@ const departmentLabel: Record<string, string> = {
 
       <!-- Task -->
       <div class="launcher__field">
-        <label class="launcher__label">任務描述（選填）</label>
+        <label class="launcher__label">{{ $t('sessions.launcher.taskDesc') }}</label>
         <textarea
           v-model="task"
           rows="2"
           class="launcher__textarea"
-          placeholder="可留空，直接在終端下指令..."
+          :placeholder="$t('sessions.launcher.taskPlaceholder')"
         />
       </div>
 
       <!-- Model + Max Turns -->
       <div class="launcher__grid-2">
         <div class="launcher__field">
-          <label class="launcher__label">模型</label>
+          <label class="launcher__label">{{ $t('sessions.launcher.model') }}</label>
           <select v-model="model" class="launcher__select">
             <option v-for="opt in modelOptions" :key="opt.value" :value="opt.value">
               {{ opt.label }} - {{ opt.desc }}
@@ -434,7 +436,7 @@ const departmentLabel: Record<string, string> = {
           </select>
         </div>
         <div class="launcher__field">
-          <label class="launcher__label">最大回合數</label>
+          <label class="launcher__label">{{ $t('sessions.launcher.maxTurns') }}</label>
           <input
             v-model.number="maxTurns"
             type="number"
@@ -448,7 +450,7 @@ const departmentLabel: Record<string, string> = {
       <!-- Prompt Preview -->
       <div class="launcher__field">
         <button class="launcher__preview-btn" @click="loadPromptPreview">
-          {{ showPromptPreview ? '隱藏' : '預覽' }}系統提示詞
+          {{ showPromptPreview ? $t('sessions.launcher.hidePrompt') : $t('sessions.launcher.previewPrompt') }}
         </button>
         <div v-if="showPromptPreview" class="launcher__prompt-preview">
           <pre class="launcher__prompt-pre">{{ promptPreview }}</pre>
@@ -458,9 +460,9 @@ const departmentLabel: Record<string, string> = {
 
     <template #footer>
       <div class="launcher__footer">
-        <BaseButton variant="ghost" @click="emit('close')">取消</BaseButton>
+        <BaseButton variant="ghost" @click="emit('close')">{{ $t('common.cancel') }}</BaseButton>
         <BaseButton variant="primary" :disabled="!canLaunch || launching" @click="launch">
-          {{ launching ? '啟動中...' : '啟動' }}
+          {{ launching ? $t('sessions.launcher.launching') : $t('sessions.launcher.launch') }}
         </BaseButton>
       </div>
     </template>

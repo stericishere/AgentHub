@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { GateType, GateRecord, GateChecklist, GateChecklistItem } from '../../stores/gates';
 import BaseButton from '../common/BaseButton.vue';
 
@@ -20,6 +21,8 @@ const emit = defineEmits<{
     itemReasons?: Record<string, string>,
   ];
 }>();
+
+const { t } = useI18n();
 
 const checkStates = ref<Record<string, boolean>>({});
 
@@ -90,30 +93,13 @@ const lockedItems = computed(() => {
   );
 });
 
-const gateLabels: Record<GateType, string> = {
-  G0: '需求確認',
-  G1: '圖稿審核',
-  G2: '程式碼審查',
-  G3: '測試驗收',
-  G4: '文件審查',
-  G5: '部署就緒',
-  G6: '正式發佈',
-};
-
 const prevGateLabel = computed(() => {
   const order: GateType[] = ['G0', 'G1', 'G2', 'G3', 'G4', 'G5', 'G6'];
   const idx = order.indexOf(props.gateType);
   if (idx <= 0) return '';
   const prev = order[idx - 1];
-  return `${prev} — ${gateLabels[prev]}`;
+  return `${prev} — ${t(`gates.typeLabels.${prev}`)}`;
 });
-
-const statusLabels: Record<string, string> = {
-  pending: '待處理',
-  submitted: '已提交',
-  approved: '已通過',
-  rejected: '已退回',
-};
 
 const statusColors: Record<string, string> = {
   pending: 'text-yellow-400',
@@ -155,14 +141,14 @@ function confirmReject() {
   <div class="checklist-panel">
     <div class="checklist-panel__header">
       <h3 class="checklist-panel__title">
-        {{ gateType }} — {{ gateLabels[gateType] }}
+        {{ gateType }} — {{ $t(`gates.typeLabels.${gateType}`) }}
       </h3>
       <span
         v-if="gate"
         class="checklist-panel__status"
         :data-status="gate.status"
       >
-        {{ statusLabels[gate.status] }}
+        {{ $t(`gates.statusLabels.${gate.status}`) }}
       </span>
     </div>
 
@@ -179,19 +165,19 @@ function confirmReject() {
         </label>
       </div>
       <p class="checklist-panel__locked-hint">
-        需先通過 {{ prevGateLabel }} 關卡
+        {{ $t('gates.checklist.lockedHint', { prevGate: prevGateLabel }) }}
       </p>
     </div>
 
     <!-- No gate yet -->
     <div v-else-if="!gate" class="checklist-panel__empty">
-      <p class="checklist-panel__muted-text">尚未建立此關卡</p>
+      <p class="checklist-panel__muted-text">{{ $t('gates.checklist.notCreated') }}</p>
     </div>
 
     <!-- Reject reason input mode (step 2) -->
     <div v-else-if="rejectMode" class="checklist-panel__reject-mode">
       <p class="checklist-panel__reject-hint">
-        請為每個不合格項目說明退回原因，填寫完成後點擊「確認退回」。
+        {{ $t('gates.checklist.rejectHint') }}
       </p>
 
       <div class="checklist-panel__failed-list">
@@ -204,28 +190,28 @@ function confirmReject() {
           <input
             v-model="itemReasons[item]"
             type="text"
-            :placeholder="'不合格原因...'"
+            :placeholder="$t('gates.checklist.failureReasonPlaceholder')"
             class="checklist-panel__reason-input"
           />
         </div>
       </div>
 
       <div class="checklist-panel__comment-block">
-        <label class="checklist-panel__comment-label">整體退回備註（選填）</label>
+        <label class="checklist-panel__comment-label">{{ $t('gates.checklist.overallComment') }}</label>
         <textarea
           v-model="rejectComment"
           rows="2"
-          placeholder="整體退回原因或建議..."
+          :placeholder="$t('gates.checklist.overallCommentPlaceholder')"
           class="checklist-panel__comment-textarea"
         />
       </div>
 
       <div class="checklist-panel__actions">
         <BaseButton size="sm" variant="danger" @click="confirmReject">
-          確認退回
+          {{ $t('gates.checklist.confirmReject') }}
         </BaseButton>
         <BaseButton size="sm" @click="cancelReject">
-          取消
+          {{ $t('gates.checklist.cancelReject') }}
         </BaseButton>
       </div>
     </div>
@@ -251,7 +237,7 @@ function confirmReject() {
             <div class="checklist-panel__item-content">
               <div class="checklist-panel__item-row">
                 <span>{{ item }}</span>
-                <span v-if="lockedItems.has(item)" class="checklist-panel__passed-badge">✓ 已通過</span>
+                <span v-if="lockedItems.has(item)" class="checklist-panel__passed-badge">{{ $t('gates.checklist.passedBadge') }}</span>
               </div>
               <div v-if="criteriaMap[item]" class="checklist-panel__criteria">
                 {{ criteriaMap[item] }}
@@ -263,14 +249,14 @@ function confirmReject() {
             v-if="gate.status === 'rejected' && !checkStates[item] && gate.itemReasons?.[item]"
             class="checklist-panel__reject-reason"
           >
-            不合格原因：{{ gate.itemReasons[item] }}
+            {{ $t('gates.checklist.rejectReason', { reason: gate.itemReasons[item] }) }}
           </div>
         </div>
       </div>
 
       <!-- Reviewer hint -->
       <p v-if="gate.status === 'submitted'" class="checklist-panel__reviewer-hint">
-        取消勾選不合格的項目，再點擊「退回」；全部合格則點擊「核准」。
+        {{ $t('gates.checklist.reviewerHint') }}
       </p>
 
       <!-- Actions -->
@@ -281,7 +267,7 @@ function confirmReject() {
           :disabled="!allChecked"
           @click="emit('submit', gate.id, { ...checkStates })"
         >
-          {{ gate.status === 'rejected' ? '重新提交' : '提交審核' }}
+          {{ gate.status === 'rejected' ? $t('gates.checklist.resubmit') : $t('gates.checklist.submit') }}
         </BaseButton>
         <BaseButton
           v-if="gate.status === 'submitted'"
@@ -290,7 +276,7 @@ function confirmReject() {
           :disabled="!allChecked"
           @click="emit('review', gate.id, 'approved')"
         >
-          核准
+          {{ $t('gates.checklist.approve') }}
         </BaseButton>
         <BaseButton
           v-if="gate.status === 'submitted'"
@@ -299,7 +285,7 @@ function confirmReject() {
           :disabled="allChecked"
           @click="enterRejectMode"
         >
-          退回
+          {{ $t('gates.checklist.reject') }}
         </BaseButton>
       </div>
 
@@ -308,9 +294,9 @@ function confirmReject() {
         v-if="gate.submittedBy || gate.reviewer"
         class="checklist-panel__meta"
       >
-        <div v-if="gate.submittedBy">提交者：{{ gate.submittedBy }}</div>
-        <div v-if="gate.reviewer">審核者：{{ gate.reviewer }}</div>
-        <div v-if="gate.decision">決議：{{ gate.decision }}</div>
+        <div v-if="gate.submittedBy">{{ $t('gates.checklist.submittedBy', { name: gate.submittedBy }) }}</div>
+        <div v-if="gate.reviewer">{{ $t('gates.checklist.reviewer', { name: gate.reviewer }) }}</div>
+        <div v-if="gate.decision">{{ $t('gates.checklist.decision', { value: gate.decision }) }}</div>
       </div>
     </div>
   </div>

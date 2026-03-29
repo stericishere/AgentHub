@@ -37,6 +37,7 @@ export default defineConfig({
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src'),
+        '../../../packages/i18n-shared/src': resolve(__dirname, '../packages/i18n-shared/src'),
       },
     },
   },

@@ -14,11 +14,15 @@
     "jsx": "preserve",
     "declaration": true,
     "outDir": "./out/renderer",
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "rootDir": ".."
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "src/**/*.json",
+    "../packages/i18n-shared/src/**/*.ts",
+    "../packages/i18n-shared/src/**/*.json"
   ]
 }

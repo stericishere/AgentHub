@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../common/BaseButton.vue';
 import { useIpc } from '../../composables/useIpc';
 
@@ -8,19 +9,20 @@ const emit = defineEmits<{
   create: [params: { name: string; description: string; template: string; workDir: string }];
 }>();
 
+const { t } = useI18n();
 const ipc = useIpc();
 const name = ref('');
 const description = ref('');
 const template = ref('blank');
 const workDir = ref('');
 
-const templates = [
-  { value: 'blank', label: '空白專案' },
-  { value: 'web-app', label: 'Web 應用' },
-  { value: 'mobile-app', label: '行動應用' },
-  { value: 'api-service', label: 'API 服務' },
-  { value: 'library', label: '套件/函式庫' },
-];
+const templates = computed(() => [
+  { value: 'blank', label: t('projects.modal.templateBlank') },
+  { value: 'web-app', label: t('projects.modal.templateWebApp') },
+  { value: 'mobile-app', label: t('projects.modal.templateMobileApp') },
+  { value: 'api-service', label: t('projects.modal.templateApiService') },
+  { value: 'library', label: t('projects.modal.templateLibrary') },
+]);
 
 async function browseFolder() {
   const folder = await ipc.selectFolder();
@@ -44,10 +46,10 @@ function submit() {
     @click.self="emit('close')"
   >
     <div class="modal">
-      <div class="modal__title">建立新專案</div>
+      <div class="modal__title">{{ $t('projects.modal.title') }}</div>
 
       <div class="modal__field">
-        <div class="modal__label">選擇模板</div>
+        <div class="modal__label">{{ $t('projects.modal.selectTemplate') }}</div>
         <div class="modal__template-grid">
           <button
             v-for="t in templates"
@@ -65,48 +67,48 @@ function submit() {
             }}</span>
             <span class="modal__template-name">{{ t.label }}</span>
             <span class="modal__template-desc">{{
-              ({ blank: '空白起始專案', 'web-app': 'React / Vue 前端應用', 'mobile-app': 'React Native / Flutter', 'api-service': 'Node.js / FastAPI 後端', library: 'NPM 套件 / SDK' })[t.value]
+              ({ blank: $t('projects.modal.templateBlankDesc'), 'web-app': $t('projects.modal.templateWebAppDesc'), 'mobile-app': $t('projects.modal.templateMobileAppDesc'), 'api-service': $t('projects.modal.templateApiServiceDesc'), library: $t('projects.modal.templateLibraryDesc') })[t.value]
             }}</span>
           </button>
         </div>
       </div>
 
       <div class="modal__field">
-        <label class="modal__label">專案名稱</label>
+        <label class="modal__label">{{ $t('projects.modal.nameLabel') }}</label>
         <input
           v-model="name"
           class="modal__input"
-          placeholder="例如：MyAwesomeApp"
+          :placeholder="$t('projects.modal.namePlaceholder')"
           @keydown.enter="submit"
         />
       </div>
 
       <div class="modal__field">
-        <label class="modal__label">工作目錄 <span class="modal__required">*</span></label>
+        <label class="modal__label">{{ $t('projects.modal.workDirLabel') }} <span class="modal__required">*</span></label>
         <div class="modal__workdir-row">
           <input
             v-model="workDir"
             class="modal__input modal__input--flex"
-            placeholder="C:\projects\my-project"
+            :placeholder="$t('projects.modal.workDirPlaceholder')"
             @keydown.enter="submit"
           />
-          <BaseButton variant="ghost" size="sm" @click="browseFolder">瀏覽</BaseButton>
+          <BaseButton variant="ghost" size="sm" @click="browseFolder">{{ $t('common.browse') }}</BaseButton>
         </div>
-        <p class="modal__hint">Session 將在此目錄下執行 Claude Code</p>
+        <p class="modal__hint">{{ $t('projects.modal.workDirHint') }}</p>
       </div>
 
       <div class="modal__field">
-        <label class="modal__label">專案描述（選填）</label>
+        <label class="modal__label">{{ $t('projects.modal.descriptionLabel') }}</label>
         <textarea
           v-model="description"
           class="modal__input modal__input--textarea"
-          placeholder="簡短描述這個專案的目標與功能..."
+          :placeholder="$t('projects.modal.descriptionPlaceholder')"
         />
       </div>
 
       <div class="modal__actions">
-        <BaseButton variant="ghost" size="sm" @click="emit('close')">取消</BaseButton>
-        <BaseButton variant="primary" size="sm" @click="submit">建立專案</BaseButton>
+        <BaseButton variant="ghost" size="sm" @click="emit('close')">{{ $t('common.cancel') }}</BaseButton>
+        <BaseButton variant="primary" size="sm" @click="submit">{{ $t('projects.modal.create') }}</BaseButton>
       </div>
     </div>
   </div>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useProjectsStore } from '../stores/projects';
 import { useTasksStore } from '../stores/tasks';
@@ -12,6 +13,7 @@ import type { ProjectRecord } from '../stores/projects';
 import BaseButton from '../components/common/BaseButton.vue';
 import BaseTag from '../components/common/BaseTag.vue';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const projectsStore = useProjectsStore();
@@ -47,13 +49,13 @@ const permissionMode = ref<PermissionMode>('');
 const allowedTools = ref<string[]>([]);
 const newToolInput = ref('');
 
-const permissionModeOptions: { value: PermissionMode; label: string; desc: string }[] = [
-  { value: '', label: '不指定', desc: '使用 Claude Code 預設行為' },
-  { value: 'default', label: '預設', desc: '每次操作都詢問' },
-  { value: 'acceptEdits', label: '自動接受編輯', desc: '檔案編輯自動通過，其他詢問' },
-  { value: 'auto', label: '自動', desc: '大部分操作自動通過' },
-  { value: 'bypassPermissions', label: '跳過所有權限', desc: '不詢問任何權限（僅限安全環境）' },
-];
+const permissionModeOptions = computed<{ value: PermissionMode; label: string; desc: string }[]>(() => [
+  { value: '', label: t('projects.permissionMode.unset'), desc: t('projects.permissionMode.unsetDesc') },
+  { value: 'default', label: t('projects.permissionMode.default'), desc: t('projects.permissionMode.defaultDesc') },
+  { value: 'acceptEdits', label: t('projects.permissionMode.acceptEdits'), desc: t('projects.permissionMode.acceptEditsDesc') },
+  { value: 'auto', label: t('projects.permissionMode.auto'), desc: t('projects.permissionMode.autoDesc') },
+  { value: 'bypassPermissions', label: t('projects.permissionMode.bypass'), desc: t('projects.permissionMode.bypassDesc') },
+]);
 
 async function loadPermissionSettings() {
   const prefs = settingsStore.preferences;
@@ -152,12 +154,12 @@ async function toggleGitCard() {
 function formatRelativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return '剛剛';
-  if (mins < 60) return `${mins} 分鐘前`;
+  if (mins < 1) return t('common.justNow');
+  if (mins < 60) return t('common.minutesAgo', { n: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} 小時前`;
+  if (hours < 24) return t('common.hoursAgo', { n: hours });
   const days = Math.floor(hours / 24);
-  return `${days} 天前`;
+  return t('common.daysAgo', { n: days });
 }
 
 async function loadTasks(id: string) {
@@ -217,13 +219,13 @@ async function saveInfo() {
 
 const stats = computed(() => projectsStore.projectStats[projectId.value] ?? null);
 
-const statusLabel: Record<string, string> = {
-  planning: '規劃中',
-  active: '進行中',
-  paused: '暫停',
-  completed: '已完成',
-  archived: '已封存',
-};
+const statusLabel = computed<Record<string, string>>(() => ({
+  planning: t('projects.statusLabels.planning'),
+  active: t('projects.statusLabels.active'),
+  paused: t('projects.statusLabels.paused'),
+  completed: t('projects.statusLabels.completed'),
+  archived: t('projects.statusLabels.archived'),
+}));
 
 const statusColor: Record<string, 'purple' | 'green' | 'yellow' | 'red' | 'blue'> = {
   planning: 'purple',
@@ -233,12 +235,12 @@ const statusColor: Record<string, 'purple' | 'green' | 'yellow' | 'red' | 'blue'
   archived: 'red',
 };
 
-const sprintStatusLabel: Record<string, string> = {
-  planning: '規劃中',
-  active: '進行中',
-  review: '審查中',
-  completed: '已完成',
-};
+const sprintStatusLabel = computed<Record<string, string>>(() => ({
+  planning: t('projects.sprintStatusLabels.planning'),
+  active: t('projects.sprintStatusLabels.active'),
+  review: t('projects.sprintStatusLabels.review'),
+  completed: t('projects.sprintStatusLabels.completed'),
+}));
 
 const sprintStatusColor: Record<string, 'purple' | 'green' | 'yellow' | 'blue'> = {
   planning: 'purple',
@@ -252,16 +254,16 @@ type ProjectStatus = 'planning' | 'active' | 'paused' | 'completed' | 'archived'
 const availableStatusTransitions = computed((): { status: ProjectStatus; label: string }[] => {
   if (!project.value) return [];
   const map: Record<string, { status: ProjectStatus; label: string }[]> = {
-    planning: [{ status: 'active', label: '啟動專案' }],
+    planning: [{ status: 'active', label: t('projects.actions.activate') }],
     active: [
-      { status: 'paused', label: '暫停' },
-      { status: 'completed', label: '完成' },
+      { status: 'paused', label: t('projects.actions.pause') },
+      { status: 'completed', label: t('projects.actions.complete') },
     ],
     paused: [
-      { status: 'active', label: '恢復' },
-      { status: 'archived', label: '封存' },
+      { status: 'active', label: t('projects.actions.resume') },
+      { status: 'archived', label: t('projects.actions.archive') },
     ],
-    completed: [{ status: 'archived', label: '封存' }],
+    completed: [{ status: 'archived', label: t('projects.actions.archive') }],
     archived: [],
   };
   return map[project.value.status] || [];
@@ -283,7 +285,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
       <circle cx="12" cy="12" r="10"/>
       <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
-    <span>專案不存在</span>
+    <span>{{ $t('projects.notFound') }}</span>
   </div>
 
   <!-- Main layout -->
@@ -295,7 +297,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
-        專案
+        {{ $t('nav.projects') }}
       </button>
       <span class="detail-topbar-sep">/</span>
       <span class="detail-topbar-title">{{ project.name }}</span>
@@ -308,7 +310,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
-          編輯
+          {{ $t('common.edit') }}
         </BaseButton>
         <BaseButton
           v-for="t in availableStatusTransitions"
@@ -330,19 +332,19 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
 
         <!-- Project info card -->
         <div class="detail-card">
-          <div class="detail-card-label">專案資訊</div>
+          <div class="detail-card-label">{{ $t('projects.info.title') }}</div>
 
           <!-- Edit mode -->
           <template v-if="editingInfo">
             <div class="detail-form-group" style="margin-bottom:10px;">
-              <label class="detail-form-label">名稱</label>
+              <label class="detail-form-label">{{ $t('projects.info.name') }}</label>
               <input
                 v-model="editName"
                 class="detail-input"
               />
             </div>
             <div class="detail-form-group" style="margin-bottom:12px;">
-              <label class="detail-form-label">描述</label>
+              <label class="detail-form-label">{{ $t('projects.info.description') }}</label>
               <textarea
                 v-model="editDescription"
                 class="detail-input"
@@ -351,25 +353,25 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
               />
             </div>
             <div class="detail-edit-actions">
-              <BaseButton variant="primary" size="sm" @click="saveInfo">儲存</BaseButton>
-              <BaseButton variant="ghost" size="sm" @click="editingInfo = false">取消</BaseButton>
+              <BaseButton variant="primary" size="sm" @click="saveInfo">{{ $t('common.save') }}</BaseButton>
+              <BaseButton variant="ghost" size="sm" @click="editingInfo = false">{{ $t('common.cancel') }}</BaseButton>
             </div>
           </template>
 
           <!-- View mode -->
           <template v-else>
             <div class="detail-info-row">
-              <span class="detail-info-key">名稱</span>
+              <span class="detail-info-key">{{ $t('projects.info.name') }}</span>
               <span class="detail-info-val" style="font-weight:600;">{{ project.name }}</span>
             </div>
             <div class="detail-info-row">
-              <span class="detail-info-key">類型</span>
+              <span class="detail-info-key">{{ $t('projects.info.type') }}</span>
               <span class="detail-info-val">
                 <BaseTag color="blue">web-app</BaseTag>
               </span>
             </div>
             <div class="detail-info-row">
-              <span class="detail-info-key">狀態</span>
+              <span class="detail-info-key">{{ $t('projects.info.status') }}</span>
               <span class="detail-info-val">
                 <BaseTag :color="statusColor[project.status] || 'purple'">
                   {{ statusLabel[project.status] || project.status }}
@@ -377,17 +379,17 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
               </span>
             </div>
             <div v-if="project.workDir" class="detail-info-row">
-              <span class="detail-info-key">工作目錄</span>
+              <span class="detail-info-key">{{ $t('projects.info.workDir') }}</span>
               <span class="detail-info-val detail-info-mono">{{ project.workDir }}</span>
             </div>
             <div class="detail-info-row">
-              <span class="detail-info-key">建立日期</span>
+              <span class="detail-info-key">{{ $t('projects.info.createdAt') }}</span>
               <span class="detail-info-val detail-info-muted">{{ project.createdAt?.slice(0, 10) || '--' }}</span>
             </div>
             <div class="detail-info-row" style="border-bottom:none;">
-              <span class="detail-info-key">描述</span>
+              <span class="detail-info-key">{{ $t('projects.info.description') }}</span>
               <span class="detail-info-val" style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;">
-                {{ project.description || '尚無描述' }}
+                {{ project.description || $t('projects.info.noDescription') }}
               </span>
             </div>
           </template>
@@ -396,15 +398,15 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
         <!-- Git Overview -->
         <div v-if="project.workDir" class="detail-card">
           <div class="detail-collapsible-header" @click="toggleGitCard">
-            <span class="detail-card-label" style="margin-bottom:0;">Git 狀態</span>
+            <span class="detail-card-label" style="margin-bottom:0;">{{ $t('projects.git.title') }}</span>
             <span class="detail-chevron" :class="{ open: gitExpanded }">&#9654;</span>
           </div>
           <div v-if="gitExpanded" class="detail-collapsible-body">
-            <div v-if="gitLoading" class="detail-empty-small">載入中...</div>
-            <div v-else-if="gitError" class="detail-empty-small">無法取得 Git 狀態</div>
+            <div v-if="gitLoading" class="detail-empty-small">{{ $t('common.loading') }}</div>
+            <div v-else-if="gitError" class="detail-empty-small">{{ $t('projects.git.error') }}</div>
             <div v-else-if="gitSummary" class="detail-git-info">
               <div class="detail-git-row">
-                <span class="detail-git-key">分支</span>
+                <span class="detail-git-key">{{ $t('projects.git.branch') }}</span>
                 <span class="detail-git-branch">{{ gitSummary.branch || 'unknown' }}</span>
                 <span class="detail-git-key" style="margin-left:12px;">Ahead</span>
                 <span :class="gitSummary.ahead > 0 ? 'detail-git-val--warning' : 'detail-git-val--muted'">{{ gitSummary.ahead }}</span>
@@ -412,31 +414,31 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
                 <span :class="gitSummary.behind > 0 ? 'detail-git-val--info' : 'detail-git-val--muted'">{{ gitSummary.behind }}</span>
               </div>
               <div class="detail-git-row">
-                <span class="detail-git-key">暫存</span>
+                <span class="detail-git-key">{{ $t('projects.git.staged') }}</span>
                 <span :class="gitSummary.staged.length > 0 ? 'detail-git-val--success' : 'detail-git-val--muted'">{{ gitSummary.staged.length }}</span>
-                <span class="detail-git-key" style="margin-left:12px;">修改</span>
+                <span class="detail-git-key" style="margin-left:12px;">{{ $t('projects.git.modified') }}</span>
                 <span :class="gitSummary.modified.length > 0 ? 'detail-git-val--warning' : 'detail-git-val--muted'">{{ gitSummary.modified.length }}</span>
-                <span class="detail-git-key" style="margin-left:12px;">未追蹤</span>
+                <span class="detail-git-key" style="margin-left:12px;">{{ $t('projects.git.untracked') }}</span>
                 <span :class="gitSummary.untracked.length > 0 ? 'detail-git-val--info' : 'detail-git-val--muted'">{{ gitSummary.untracked.length }}</span>
               </div>
               <div v-if="gitStore.commits.length > 0" class="detail-git-row" style="gap:6px;">
-                <span class="detail-git-key">最近提交</span>
+                <span class="detail-git-key">{{ $t('projects.git.lastCommit') }}</span>
                 <span class="detail-git-commit">{{ gitStore.commits[0].message }}</span>
                 <span class="detail-git-key">({{ formatRelativeTime(gitStore.commits[0].date) }})</span>
               </div>
             </div>
-            <div v-else class="detail-empty-small">此目錄不是 Git 儲存庫</div>
+            <div v-else class="detail-empty-small">{{ $t('projects.git.notRepo') }}</div>
           </div>
         </div>
 
         <!-- Claude Permission Settings -->
         <div class="detail-card">
-          <div class="detail-card-label">Claude 權限設定</div>
+          <div class="detail-card-label">{{ $t('projects.permissions.title') }}</div>
           <p style="font-size:12px;color:var(--color-text-muted);margin-bottom:12px;">
-            此專案的 Session 啟動時自動套用以下權限設定
+            {{ $t('projects.permissions.desc') }}
           </p>
           <div style="margin-bottom:14px;">
-            <label class="detail-form-label" style="margin-bottom:8px;">權限模式</label>
+            <label class="detail-form-label" style="margin-bottom:8px;">{{ $t('projects.permissions.modeLabel') }}</label>
             <div style="display:flex;flex-wrap:wrap;gap:8px;">
               <button
                 v-for="opt in permissionModeOptions"
@@ -451,7 +453,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
             </div>
           </div>
           <div>
-            <label class="detail-form-label" style="margin-bottom:6px;">預設允許工具</label>
+            <label class="detail-form-label" style="margin-bottom:6px;">{{ $t('projects.permissions.allowedTools') }}</label>
             <div v-if="allowedTools.length > 0" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
               <span
                 v-for="tool in allowedTools"
@@ -467,15 +469,15 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
                 v-model="newToolInput"
                 class="detail-input"
                 style="flex:1;font-size:12px;"
-                placeholder="例如：Bash(git:*), Edit, Read, Write"
+                :placeholder="$t('projects.permissions.toolPlaceholder')"
                 @keydown.enter="addAllowedTool"
               />
               <BaseButton variant="ghost" size="sm" :disabled="!newToolInput.trim()" @click="addAllowedTool">
-                新增
+                {{ $t('common.add') }}
               </BaseButton>
             </div>
             <p style="margin-top:6px;font-size:10px;color:var(--color-text-muted);">
-              格式同 Claude Code --allowedTools，如 Bash(git:*), Edit, Read
+              {{ $t('projects.permissions.toolHint') }}
             </p>
           </div>
         </div>
@@ -483,7 +485,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
         <!-- Sprint list -->
         <div>
           <div class="detail-section-header">
-            <span class="detail-section-title">Sprint 歷程</span>
+            <span class="detail-section-title">{{ $t('projects.sprintHistory') }}</span>
           </div>
 
           <!-- Empty -->
@@ -491,8 +493,8 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="opacity:0.4;">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
-            <span class="detail-empty-title">尚無 Sprint</span>
-            <span class="detail-empty-desc">Sprint 由 PM 透過提案流程建立</span>
+            <span class="detail-empty-title">{{ $t('projects.noSprints') }}</span>
+            <span class="detail-empty-desc">{{ $t('projects.noSprintsDesc') }}</span>
           </div>
 
           <!-- Sprint cards -->
@@ -510,7 +512,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
                   v-if="sprint.sprintType && sprint.sprintType !== 'full'"
                   class="detail-sprint-type"
                 >
-                  {{ { feature: '功能', bugfix: '修復', release: '發佈' }[sprint.sprintType] || sprint.sprintType }}
+                  {{ { feature: $t('projects.sprintTypes.feature'), bugfix: $t('projects.sprintTypes.bugfix'), release: $t('projects.sprintTypes.release') }[sprint.sprintType] || sprint.sprintType }}
                 </span>
                 <span
                   v-if="sprintSessionCounts[sprint.id]"
@@ -527,7 +529,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
                   size="sm"
                   @click.stop="projectsStore.doStartSprint(sprint.id)"
                 >
-                  啟動
+                  {{ $t('projects.actions.activate') }}
                 </BaseButton>
               </div>
 
@@ -541,7 +543,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
 
                 <!-- Gate pipeline -->
                 <div v-if="sprintGateProgress[sprint.id] && sprintGateProgress[sprint.id].gates.length > 0">
-                  <div class="detail-gate-label">Gate 進度管線</div>
+                  <div class="detail-gate-label">{{ $t('projects.gatePipeline') }}</div>
                   <div class="detail-gate-pipeline">
                     <div
                       v-for="g in sprintGateProgress[sprint.id].gates"
@@ -572,7 +574,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
                     />
                   </div>
                   <div class="detail-sprint-meta">
-                    <span>{{ sprintGateProgress[sprint.id].approved }} / {{ sprintGateProgress[sprint.id].total }} 關卡通過</span>
+                    <span>{{ $t('projects.gatesPassedOf', { approved: sprintGateProgress[sprint.id].approved, total: sprintGateProgress[sprint.id].total }) }}</span>
                     <span :style="sprint.status === 'completed' ? 'color:var(--color-success)' : ''">
                       {{ Math.round((sprintGateProgress[sprint.id].approved / sprintGateProgress[sprint.id].total) * 100) }}%
                     </span>
@@ -590,43 +592,43 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
 
         <!-- Stats grid -->
         <div>
-          <div class="detail-section-title" style="margin-bottom:10px;">統計</div>
+          <div class="detail-section-title" style="margin-bottom:10px;">{{ $t('projects.stats.title') }}</div>
           <div v-if="stats" class="detail-stat-grid">
             <div class="detail-stat-mini">
               <span class="detail-stat-val">{{ tasksStore.totalCount }}</span>
-              <span class="detail-stat-label">總任務</span>
+              <span class="detail-stat-label">{{ $t('projects.stats.totalTasks') }}</span>
             </div>
             <div class="detail-stat-mini">
               <span class="detail-stat-val" style="color:var(--color-success);">{{ stats.tasksDone ?? 0 }}</span>
-              <span class="detail-stat-label">已完成</span>
+              <span class="detail-stat-label">{{ $t('projects.stats.done') }}</span>
             </div>
             <div class="detail-stat-mini">
               <span class="detail-stat-val" style="color:var(--color-warning);">{{ stats.tasksInProgress ?? 0 }}</span>
-              <span class="detail-stat-label">進行中</span>
+              <span class="detail-stat-label">{{ $t('projects.stats.inProgress') }}</span>
             </div>
             <div class="detail-stat-mini">
               <span class="detail-stat-val">{{ tasksStore.totalCount - (stats.tasksDone ?? 0) - (stats.tasksInProgress ?? 0) }}</span>
-              <span class="detail-stat-label">待開始</span>
+              <span class="detail-stat-label">{{ $t('projects.stats.notStarted') }}</span>
             </div>
           </div>
           <div v-else class="detail-stat-grid">
-            <div class="detail-stat-mini"><span class="detail-stat-val">--</span><span class="detail-stat-label">總任務</span></div>
-            <div class="detail-stat-mini"><span class="detail-stat-val">--</span><span class="detail-stat-label">已完成</span></div>
-            <div class="detail-stat-mini"><span class="detail-stat-val">--</span><span class="detail-stat-label">進行中</span></div>
-            <div class="detail-stat-mini"><span class="detail-stat-val">--</span><span class="detail-stat-label">待開始</span></div>
+            <div class="detail-stat-mini"><span class="detail-stat-val">--</span><span class="detail-stat-label">{{ $t('projects.stats.totalTasks') }}</span></div>
+            <div class="detail-stat-mini"><span class="detail-stat-val">--</span><span class="detail-stat-label">{{ $t('projects.stats.done') }}</span></div>
+            <div class="detail-stat-mini"><span class="detail-stat-val">--</span><span class="detail-stat-label">{{ $t('projects.stats.inProgress') }}</span></div>
+            <div class="detail-stat-mini"><span class="detail-stat-val">--</span><span class="detail-stat-label">{{ $t('projects.stats.notStarted') }}</span></div>
           </div>
 
           <div v-if="stats?.activeSprint" class="detail-stat-full">
-            <span class="detail-stat-full-label">Sprint 進度</span>
+            <span class="detail-stat-full-label">{{ $t('projects.stats.sprintProgress') }}</span>
             <span class="detail-stat-full-val">{{ stats.activeSprint.progressPct }}%</span>
           </div>
         </div>
 
         <!-- Recent tasks -->
         <div>
-          <div class="detail-section-title" style="margin-bottom:10px;">最近任務</div>
+          <div class="detail-section-title" style="margin-bottom:10px;">{{ $t('projects.recentTasks') }}</div>
           <div v-if="tasksStore.totalCount === 0" class="detail-right-empty">
-            <span>尚無任務，可到任務看板建立</span>
+            <span>{{ $t('projects.noTasks') }}</span>
           </div>
           <div v-else class="detail-list-card">
             <div
@@ -653,7 +655,7 @@ async function changeProjectStatus(newStatus: ProjectStatus) {
                     : 'var(--color-text-muted)'
                 }"
               >
-                {{ { created: '待處理', assigned: '已分配', in_progress: '進行中', in_review: '審查中', blocked: '阻塞', done: '完成' }[task.status] || task.status }}
+                {{ { created: $t('taskboard.statusLabels.created'), assigned: $t('taskboard.statusLabels.assigned'), in_progress: $t('taskboard.statusLabels.in_progress'), in_review: $t('taskboard.statusLabels.in_review'), blocked: $t('taskboard.statusLabels.blocked'), done: $t('taskboard.statusLabels.done') }[task.status] || task.status }}
               </span>
             </div>
           </div>

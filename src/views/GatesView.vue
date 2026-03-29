@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useGatesStore } from '../stores/gates';
 import { useProjectsStore } from '../stores/projects';
 import BaseTag from '../components/common/BaseTag.vue';
 
+const { t } = useI18n();
 const gatesStore = useGatesStore();
 const projectsStore = useProjectsStore();
 
@@ -15,22 +17,22 @@ onMounted(async () => {
   await gatesStore.fetchGates();
 });
 
-const gateTypeLabel: Record<string, string> = {
-  G0: '需求確認',
-  G1: '圖稿審核',
-  G2: '程式碼審查',
-  G3: '測試驗收',
-  G4: '文件審查',
-  G5: '部署就緒',
-  G6: '正式發佈',
-};
+const gateTypeLabel = computed<Record<string, string>>(() => ({
+  G0: t('gates.typeLabels.G0'),
+  G1: t('gates.typeLabels.G1'),
+  G2: t('gates.typeLabels.G2'),
+  G3: t('gates.typeLabels.G3'),
+  G4: t('gates.typeLabels.G4'),
+  G5: t('gates.typeLabels.G5'),
+  G6: t('gates.typeLabels.G6'),
+}));
 
-const gateStatusLabel: Record<string, string> = {
-  pending: '待處理',
-  submitted: '已提交',
-  approved: '已通過',
-  rejected: '已退回',
-};
+const gateStatusLabel = computed<Record<string, string>>(() => ({
+  pending: t('gates.statusLabels.pending'),
+  submitted: t('gates.statusLabels.submitted'),
+  approved: t('gates.statusLabels.approved'),
+  rejected: t('gates.statusLabels.rejected'),
+}));
 
 const gateStatusColor: Record<string, 'yellow' | 'blue' | 'green' | 'red'> = {
   pending: 'yellow',
@@ -73,10 +75,10 @@ function formatDate(dateStr: string): string {
   <div class="gates-view">
     <!-- Page Header -->
     <div class="gates-header">
-      <h2 class="gates-title">審核關卡</h2>
+      <h2 class="gates-title">{{ $t('gates.title') }}</h2>
       <div class="gates-filters">
         <select v-model="filterProjectId" class="filter-select">
-          <option value="">全部專案</option>
+          <option value="">{{ $t('gates.allProjects') }}</option>
           <option
             v-for="project in projectsStore.projects"
             :key="project.id"
@@ -86,11 +88,11 @@ function formatDate(dateStr: string): string {
           </option>
         </select>
         <select v-model="filterStatus" class="filter-select">
-          <option value="">全部狀態</option>
-          <option value="pending">待處理</option>
-          <option value="submitted">已提交</option>
-          <option value="approved">已通過</option>
-          <option value="rejected">已退回</option>
+          <option value="">{{ $t('gates.allStatuses') }}</option>
+          <option value="pending">{{ $t('gates.statusLabels.pending') }}</option>
+          <option value="submitted">{{ $t('gates.statusLabels.submitted') }}</option>
+          <option value="approved">{{ $t('gates.statusLabels.approved') }}</option>
+          <option value="rejected">{{ $t('gates.statusLabels.rejected') }}</option>
         </select>
       </div>
     </div>
@@ -123,8 +125,8 @@ function formatDate(dateStr: string): string {
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
         </div>
-        <div class="empty-title">尚無審核關卡紀錄</div>
-        <div class="empty-sub">建立 Sprint 後，系統將自動建立關卡管線</div>
+        <div class="empty-title">{{ $t('gates.noRecords') }}</div>
+        <div class="empty-sub">{{ $t('gates.noRecordsDesc') }}</div>
       </div>
 
       <!-- Timeline list -->
@@ -170,14 +172,14 @@ function formatDate(dateStr: string): string {
                   <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
-                提交人:&nbsp;<strong>{{ gate.submittedBy }}</strong>
+                {{ $t('gates.submittedBy') }}:&nbsp;<strong>{{ gate.submittedBy }}</strong>
               </div>
               <span v-if="gate.reviewer" class="person-dot"></span>
               <div v-if="gate.reviewer" class="person-info">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
-                審核人:&nbsp;<strong>{{ gate.reviewer }}</strong>
+                {{ $t('gates.reviewer') }}:&nbsp;<strong>{{ gate.reviewer }}</strong>
               </div>
             </div>
 

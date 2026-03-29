@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useSettingsStore } from '../stores/settings';
+import { storeLocale, type SupportedLocale } from '../../../packages/i18n-shared/src';
 import BaseButton from '../components/common/BaseButton.vue';
 
+const { t, locale } = useI18n();
 const settingsStore = useSettingsStore();
 
 const activeTab = ref('general');
-const tabs = [
-  { key: 'general', label: '一般' },
-];
+const tabs = computed(() => [
+  { key: 'general', label: t('settings.tabs.general') },
+]);
 
 const saveMessage = ref('');
 
@@ -23,9 +26,7 @@ const clearMessage = ref('');
 const clearError = ref('');
 
 async function handleClearDatabase() {
-  const confirmed = window.confirm(
-    '警告：此操作將永久刪除所有業務資料，包含所有專案、任務、衝刺、工作階段記錄、審計日誌等。\n\n資料庫結構（schema_migrations）將保留，應用程式不會損壞。\n\n此操作無法復原，請確認後繼續。',
-  );
+  const confirmed = window.confirm(t('settings.clearConfirm'));
   if (!confirmed) return;
 
   clearing.value = true;
@@ -34,10 +35,10 @@ async function handleClearDatabase() {
   try {
     const result = await window.maestro.system.clearDatabase();
     const totalDeleted = Object.values(result.deletedCounts).reduce((a, b) => a + b, 0);
-    clearMessage.value = `已清除完成，共刪除 ${totalDeleted} 筆資料。`;
+    clearMessage.value = t('settings.clearSuccess', { n: totalDeleted });
     setTimeout(() => { clearMessage.value = ''; }, 5000);
   } catch (err: unknown) {
-    clearError.value = err instanceof Error ? err.message : '清除失敗，請稍後再試。';
+    clearError.value = err instanceof Error ? err.message : t('settings.clearFailed');
     setTimeout(() => { clearError.value = ''; }, 5000);
   } finally {
     clearing.value = false;
@@ -52,6 +53,8 @@ onMounted(async () => {
       form.value[key] = prefs[key];
     }
   }
+  // Ensure form reflects the current active locale (may differ from stale DB value)
+  form.value.language = locale.value;
 });
 
 async function save() {
@@ -59,34 +62,42 @@ async function save() {
   for (const [key, value] of entries) {
     await settingsStore.update(key, String(value), 'general');
   }
-  saveMessage.value = '設定已儲存';
+  // Apply language change on save
+  const lang = form.value.language as SupportedLocale;
+  locale.value = lang;
+  storeLocale(lang);
+  document.documentElement.lang = lang;
+  saveMessage.value = t('settings.saved');
   setTimeout(() => { saveMessage.value = ''; }, 2000);
 }
 </script>
 
 <template>
   <div class="settings-view">
-    <!-- Horizontal tab navigation -->
-    <div class="settings-tab-nav">
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        class="settings-tab-btn"
-        :class="{ 'is-active': activeTab === tab.key }"
-        @click="activeTab = tab.key"
-      >
-        {{ tab.label }}
-      </button>
+    <!-- Page header + tab navigation -->
+    <div class="settings-page-header">
+      <h1 class="settings-page-title">{{ $t('nav.settings') }}</h1>
+      <div class="settings-tab-nav">
+        <button
+          v-for="tab in tabs"
+          :key="tab.key"
+          class="settings-tab-btn"
+          :class="{ 'is-active': activeTab === tab.key }"
+          @click="activeTab = tab.key"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
     </div>
 
     <div class="settings-content">
       <div v-show="activeTab === 'general'" class="settings-tab-panel">
         <!-- Main card -->
         <div class="settings-card">
-          <p class="settings-section-title">一般設定</p>
+          <p class="settings-section-title">{{ $t('settings.generalSettings') }}</p>
 
           <div class="form-field">
-            <label class="field-label">語言</label>
+            <label class="field-label">{{ $t('settings.language') }}</label>
             <select v-model="form.language" class="field-select">
               <option value="zh-TW">繁體中文</option>
               <option value="en">English</option>
@@ -94,14 +105,14 @@ async function save() {
           </div>
 
           <div class="form-field">
-            <label class="field-label">專案根目錄</label>
+            <label class="field-label">{{ $t('settings.projectRoot') }}</label>
             <input
               v-model="form.projectRoot"
               type="text"
               placeholder="C:\projects"
               class="field-input field-input--full"
             />
-            <p class="field-hint">所有子專案的預設存放路徑</p>
+            <p class="field-hint">{{ $t('settings.projectRootHint') }}</p>
           </div>
         </div>
 
@@ -113,13 +124,13 @@ async function save() {
               <line x1="12" y1="9" x2="12" y2="13"/>
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            危險區域
+            {{ $t('settings.dangerZone') }}
           </div>
-          <p class="danger-desc">以下操作具有不可復原的風險，請謹慎操作。</p>
+          <p class="danger-desc">{{ $t('settings.dangerDesc') }}</p>
           <div class="danger-row">
             <div class="danger-row-info">
-              <div class="danger-row-label">清除所有資料</div>
-              <div class="danger-row-desc">刪除所有專案、任務、工作階段記錄與設定</div>
+              <div class="danger-row-label">{{ $t('settings.clearData') }}</div>
+              <div class="danger-row-desc">{{ $t('settings.clearDataDesc') }}</div>
             </div>
             <BaseButton
               variant="danger"
@@ -127,7 +138,7 @@ async function save() {
               :loading="clearing"
               @click="handleClearDatabase"
             >
-              {{ clearing ? '清除中...' : '清除所有資料' }}
+              {{ clearing ? $t('settings.clearing') : $t('settings.clearData') }}
             </BaseButton>
           </div>
           <p v-if="clearMessage" class="feedback-success">{{ clearMessage }}</p>
@@ -136,7 +147,7 @@ async function save() {
 
         <!-- Save row -->
         <div class="save-row">
-          <BaseButton variant="ghost" @click="save">儲存設定</BaseButton>
+          <BaseButton variant="ghost" @click="save">{{ $t('settings.saveSettings') }}</BaseButton>
           <span v-if="saveMessage" class="save-success-msg">
             <span class="save-dot" aria-hidden="true"></span>
             {{ saveMessage }}
@@ -153,6 +164,19 @@ async function save() {
   display: flex;
   flex-direction: column;
   height: 100%;
+}
+
+/* ── Page header ── */
+.settings-page-header {
+  padding: 20px 28px 0;
+  flex-shrink: 0;
+}
+
+.settings-page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
 }
 
 /* ── Tab navigation ── */
@@ -194,7 +218,7 @@ async function save() {
 .settings-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 0 40px;
+  padding: 24px 28px 40px;
 }
 .settings-content::-webkit-scrollbar {
   width: 6px;
@@ -297,7 +321,7 @@ async function save() {
   background: rgba(255, 107, 107, 0.05);
   border-radius: 12px;
   padding: 20px;
-  margin-bottom: 16px;
+  margin-top: 8px;
 }
 
 .danger-title {
@@ -352,7 +376,9 @@ async function save() {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-top: 4px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border-default);
+  margin-top: 4px;
 }
 
 .save-success-msg {

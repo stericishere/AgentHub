@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, defineAsyncComponent, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useHarnessStore } from '../stores/harness';
 import { useSessionsStore, type ActiveSession } from '../stores/sessions';
 import SessionTerminal from '../components/session/SessionTerminal.vue';
 
+const { t } = useI18n();
 const harnessStore = useHarnessStore();
 const sessionsStore = useSessionsStore();
 
@@ -29,18 +31,18 @@ const sessionStatusClass = computed(() => {
 
 const sessionStatusLabel = computed(() => {
   const labels: Record<string, string> = {
-    starting: '啟動中',
-    running: '運行中',
-    thinking: '思考中',
-    executing_tool: '執行工具',
-    awaiting_approval: '等待確認',
-    waiting_input: '等待輸入',
-    summarizing: '整理中',
-    completed: '已完成',
-    failed: '失敗',
-    stopped: '已停止',
+    starting: t('sessions.statusLabels.starting'),
+    running: t('sessions.statusLabels.running'),
+    thinking: t('sessions.statusLabels.thinking'),
+    executing_tool: t('sessions.statusLabels.executing_tool'),
+    awaiting_approval: t('sessions.statusLabels.awaiting_approval'),
+    waiting_input: t('sessions.statusLabels.waiting_input'),
+    summarizing: t('sessions.statusLabels.summarizing'),
+    completed: t('sessions.statusLabels.completed'),
+    failed: t('sessions.statusLabels.failed'),
+    stopped: t('sessions.statusLabels.stopped'),
   };
-  return labels[activeSession.value?.status || ''] || '啟動中';
+  return labels[activeSession.value?.status || ''] || t('sessions.statusLabels.starting');
 });
 
 onMounted(() => {
@@ -115,8 +117,8 @@ async function stopSession() {
         </svg>
       </div>
       <div class="harness-topbar-text">
-        <div class="harness-topbar-title">Harness 管理</div>
-        <div class="harness-topbar-subtitle">Skill / Hook / 觸發紀錄</div>
+        <div class="harness-topbar-title">{{ $t('harness.title') }}</div>
+        <div class="harness-topbar-subtitle">{{ $t('harness.subtitle') }}</div>
       </div>
     </div>
 
@@ -144,7 +146,7 @@ async function stopSession() {
         @click="harnessStore.setTab('record')"
       >
         <span class="harness-tab-icon">📋</span>
-        觸發紀錄
+        {{ $t('harness.tabs.record') }}
       </button>
       <button
         class="harness-tab"
@@ -152,7 +154,7 @@ async function stopSession() {
         @click="harnessStore.setTab('session')"
       >
         <span class="harness-tab-icon">🤖</span>
-        管理員
+        {{ $t('harness.tabs.session') }}
       </button>
     </div>
 
@@ -174,17 +176,17 @@ async function stopSession() {
               <!-- No session state: launch button -->
               <div v-if="!activeSession && !launching" class="session-empty">
                 <span class="session-empty-icon">🤖</span>
-                <p class="session-empty-title">Harness 管理員</p>
-                <p class="session-empty-desc">啟動 harness-manager 互動式 Session，透過對話建立或修改 Skill、Hook</p>
+                <p class="session-empty-title">{{ $t('harness.session.emptyTitle') }}</p>
+                <p class="session-empty-desc">{{ $t('harness.session.emptyDesc') }}</p>
                 <button class="session-launch-btn" @click="launchSession">
-                  ▶ 啟動管理員 Session
+                  ▶ {{ $t('harness.session.launch') }}
                 </button>
               </div>
 
               <!-- Launching state -->
               <div v-else-if="launching && !activeSession" class="session-empty">
                 <span class="session-empty-icon">⏳</span>
-                <p class="session-empty-title">啟動中...</p>
+                <p class="session-empty-title">{{ $t('harness.session.launching') }}</p>
               </div>
 
               <!-- Active session -->
@@ -194,7 +196,7 @@ async function stopSession() {
                   <span class="session-hdr-name">harness-manager</span>
                   <span class="session-hdr-status" :class="sessionStatusClass">● {{ sessionStatusLabel }}</span>
                   <div class="session-hdr-spacer"></div>
-                  <button class="session-stop-btn" @click="stopSession">停止</button>
+                  <button class="session-stop-btn" @click="stopSession">{{ $t('harness.session.stop') }}</button>
                 </div>
                 <div class="session-terminal-wrap">
                   <SessionTerminal :pty-id="activeSession.ptyId" :active="harnessStore.activeTab === 'session'" />
@@ -204,7 +206,7 @@ async function stopSession() {
           </div>
         </div>
         <template #fallback>
-          <div class="harness-loading">載入中...</div>
+          <div class="harness-loading">{{ $t('common.loading') }}</div>
         </template>
       </Suspense>
     </div>
@@ -223,10 +225,10 @@ async function stopSession() {
 /* TopBar */
 .harness-topbar {
   min-height: 64px;
-  padding: 0 24px;
+  padding: 10px 20px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
@@ -249,8 +251,8 @@ async function stopSession() {
 }
 
 .harness-topbar-title {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 600;
   color: var(--color-text-primary);
 }
 
@@ -264,7 +266,7 @@ async function stopSession() {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 10px 20px;
+  padding: 10px 16px;
   background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
@@ -274,11 +276,11 @@ async function stopSession() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 16px;
+  padding: 6px 14px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.15s;
   border: 1px solid transparent;

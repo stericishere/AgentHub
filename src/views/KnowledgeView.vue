@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useIpc } from '../composables/useIpc';
 import { useAgentsStore } from '../stores/agents';
 import { useProjectsStore } from '../stores/projects';
@@ -8,6 +9,7 @@ import BaseButton from '../components/common/BaseButton.vue';
 import BaseTag from '../components/common/BaseTag.vue';
 import SessionTerminal from '../components/session/SessionTerminal.vue';
 
+const { t } = useI18n();
 const ipc = useIpc();
 const agentsStore = useAgentsStore();
 const projectsStore = useProjectsStore();
@@ -124,9 +126,9 @@ async function selectFile(path: string) {
   loadingFile.value = true;
   try {
     const content = await ipc.knowledgeReadFile(path);
-    fileContent.value = content || '(檔案為空)';
+    fileContent.value = content || t('knowledge.fileEmpty');
   } catch {
-    fileContent.value = '(無法讀取檔案)';
+    fileContent.value = t('knowledge.fileReadError');
   } finally {
     loadingFile.value = false;
   }
@@ -180,11 +182,11 @@ function getFileIcon(name: string): string {
 
 function getCategoryLabel(name: string): string {
   const labels: Record<string, string> = {
-    sop: '標準作業程序',
-    standards: '編碼與品質標準',
-    templates: '文件範本',
-    'skill-templates': 'Skill 模板',
-    'project-templates': '專案模板',
+    sop: t('knowledge.categoryLabels.sop'),
+    standards: t('knowledge.categoryLabels.standards'),
+    templates: t('knowledge.categoryLabels.templates'),
+    'skill-templates': t('knowledge.categoryLabels.skillTemplates'),
+    'project-templates': t('knowledge.categoryLabels.projectTemplates'),
   };
   return labels[name] || name;
 }
@@ -207,23 +209,23 @@ function getCategoryIcon(name: string): string {
     <div class="knowledge-topbar">
       <span class="topbar-icon">📚</span>
       <div class="topbar-text">
-        <span class="topbar-title">公司知識庫</span>
-        <span class="topbar-subtitle">跨專案知識管理 — 踩坑收集、規範維護、持續改善</span>
+        <span class="topbar-title">{{ $t('knowledge.title') }}</span>
+        <span class="topbar-subtitle">{{ $t('knowledge.subtitle') }}</span>
       </div>
       <div class="topbar-actions">
         <template v-if="activeSession">
           <span class="session-indicator">
             <span class="session-dot"></span>
-            Session 執行中
+            {{ $t('knowledge.sessionActive') }}
           </span>
-          <BaseButton variant="ghost" size="sm" @click="stopSession">停止</BaseButton>
+          <BaseButton variant="ghost" size="sm" @click="stopSession">{{ $t('knowledge.stopSession') }}</BaseButton>
           <BaseButton
             v-if="rightTab !== 'session'"
             variant="primary"
             size="sm"
             @click="rightTab = 'session'"
           >
-            切換到終端
+            {{ $t('knowledge.switchToTerminal') }}
           </BaseButton>
         </template>
         <BaseButton
@@ -235,7 +237,7 @@ function getCategoryIcon(name: string): string {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0">
             <polygon points="5 3 19 12 5 21 5 3"/>
           </svg>
-          {{ launching ? '啟動中...' : '開啟知識管理 Session' }}
+          {{ launching ? $t('knowledge.launching') : $t('knowledge.launchSession') }}
         </BaseButton>
       </div>
     </div>
@@ -261,11 +263,11 @@ function getCategoryIcon(name: string): string {
         <!-- Sub-projects -->
         <div class="section-block">
           <div class="section-block-title">
-            已知子專案
+            {{ $t('knowledge.knownProjects') }}
             <span class="section-count">({{ childProjects.length }})</span>
           </div>
           <div v-if="childProjects.length === 0" class="section-empty">
-            尚無已登記工作目錄的子專案
+            {{ $t('knowledge.noProjects') }}
           </div>
           <div v-else class="subproject-list">
             <div
@@ -282,7 +284,7 @@ function getCategoryIcon(name: string): string {
                 <div class="subproject-path" :title="project.workDir || ''">{{ project.workDir }}</div>
               </div>
               <BaseTag :color="project.status === 'active' ? 'green' : 'yellow'" class="tag-xs">
-                {{ project.status === 'active' ? '進行中' : '規劃中' }}
+                {{ project.status === 'active' ? $t('knowledge.statusActive') : $t('knowledge.statusPlanning') }}
               </BaseTag>
             </div>
           </div>
@@ -290,14 +292,14 @@ function getCategoryIcon(name: string): string {
 
         <!-- File tree -->
         <div class="file-tree">
-          <div class="section-block-title" style="padding: 8px 16px 6px;">公司規範檔案</div>
+          <div class="section-block-title" style="padding: 8px 16px 6px;">{{ $t('knowledge.companyFiles') }}</div>
 
           <!-- Loading -->
-          <div v-if="loadingTree" class="tree-loading">載入中...</div>
+          <div v-if="loadingTree" class="tree-loading">{{ $t('common.loading') }}</div>
 
           <!-- Empty -->
           <div v-else-if="companyTree.length === 0" class="tree-empty">
-            尚無公司規範檔案
+            {{ $t('knowledge.noFiles') }}
           </div>
 
           <!-- Tree nodes -->
@@ -379,12 +381,12 @@ function getCategoryIcon(name: string): string {
             class="tab"
             :class="{ active: rightTab === 'session' }"
             @click="rightTab = 'session'"
-          >終端</button>
+          >{{ $t('knowledge.tabTerminal') }}</button>
           <button
             class="tab"
             :class="{ active: rightTab === 'preview' }"
             @click="rightTab = 'preview'"
-          >檔案預覽</button>
+          >{{ $t('knowledge.tabPreview') }}</button>
         </div>
 
         <!-- Session terminal -->
@@ -422,8 +424,8 @@ function getCategoryIcon(name: string): string {
         <!-- Empty state -->
         <div v-else class="empty-state">
           <div class="empty-icon">📖</div>
-          <div class="empty-title">選擇左側檔案以預覽內容</div>
-          <div class="empty-desc">或開啟知識管理 Session 進行跨專案踩坑收集</div>
+          <div class="empty-title">{{ $t('knowledge.emptyTitle') }}</div>
+          <div class="empty-desc">{{ $t('knowledge.emptyDesc') }}</div>
         </div>
 
       </div>
@@ -449,7 +451,7 @@ function getCategoryIcon(name: string): string {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 20px;
+  padding: 0 20px;
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
   flex-wrap: wrap;

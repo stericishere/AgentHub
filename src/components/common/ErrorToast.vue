@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import { useUiStore } from '../../stores/ui';
 
+const { t } = useI18n();
 const uiStore = useUiStore();
 </script>
 
@@ -15,7 +17,7 @@ const uiStore = useUiStore();
       >
         <span class="error-toast__icon">!</span>
         <div class="error-toast__body">
-          <p class="error-toast__title">Error</p>
+          <p class="error-toast__title">{{ t('common.error') }}</p>
           <p class="error-toast__message">{{ error.message }}</p>
         </div>
         <button

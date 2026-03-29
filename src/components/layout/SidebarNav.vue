@@ -1,29 +1,31 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useSessionsStore } from '../../stores/sessions';
 
 const route = useRoute();
 const sessionsStore = useSessionsStore();
+const { t } = useI18n();
 const expanded = ref(false);
 
-const navGroups = [
+const navGroups = computed(() => [
   [
-    { to: '/', icon: '\u25EB', label: '\u5100\u8868\u677F', name: 'dashboard' },
-    { to: '/sessions', icon: '\u25B7', label: '\u5DE5\u4F5C\u968E\u6BB5', name: 'sessions', badge: 'session' },
+    { to: '/', icon: '⬫', label: t('nav.dashboard'), name: 'dashboard' },
+    { to: '/sessions', icon: '▷', label: t('nav.sessions'), name: 'sessions', badge: 'session' },
   ],
   [
-    { to: '/projects', icon: '\u25A4', label: '\u5C08\u6848', name: 'projects' },
-    { to: '/tasks', icon: '\u2630', label: '\u4EFB\u52D9', name: 'tasks' },
-    { to: '/gates', icon: '\u25C8', label: '\u95DC\u5361', name: 'gates' },
-    { to: '/agents', icon: '\u25C9', label: '\u5718\u968A', name: 'agents' },
+    { to: '/projects', icon: '▤', label: t('nav.projects'), name: 'projects' },
+    { to: '/tasks', icon: '☰', label: t('nav.tasks'), name: 'tasks' },
+    { to: '/gates', icon: '◈', label: t('nav.gates'), name: 'gates' },
+    { to: '/agents', icon: '◉', label: t('nav.agents'), name: 'agents' },
     { to: '/harness', icon: '⚡', label: 'Harness', name: 'harness' },
-    { to: '/knowledge', icon: '\uD83D\uDCDA', label: '\u77E5\u8B58\u5EAB', name: 'knowledge' },
+    { to: '/knowledge', icon: '📚', label: t('nav.knowledge'), name: 'knowledge' },
   ],
   [
-    { to: '/settings', icon: '\u2699', label: '\u8A2D\u5B9A', name: 'settings' },
+    { to: '/settings', icon: '⚙', label: t('nav.settings'), name: 'settings' },
   ],
-];
+]);
 
 function isActive(item: { to: string }): boolean {
   if (item.to === '/') return route.path === '/';
@@ -89,7 +91,7 @@ function isActive(item: { to: string }): boolean {
         v-if="sessionsStore.activeCount > 0"
         class="sidebar-label ml-auto rounded-full bg-success-dim px-2 py-0.5 text-[10px] text-success"
       >
-        {{ sessionsStore.activeCount }} 執行中
+        {{ $t('components.sidebar.activeCount', { n: sessionsStore.activeCount }) }}
       </span>
     </div>
   </aside>

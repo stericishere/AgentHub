@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseTag from '../common/BaseTag.vue';
 import type { ProjectRecord, ProjectStats } from '../../stores/projects';
 
@@ -8,13 +9,15 @@ const props = defineProps<{
   stats: ProjectStats | null;
 }>();
 
-const statusLabel: Record<string, string> = {
-  planning: '規劃中',
-  active: '進行中',
-  paused: '暫停',
-  completed: '已完成',
-  archived: '已封存',
-};
+const { t } = useI18n();
+
+const statusLabel = computed<Record<string, string>>(() => ({
+  planning: t('projects.statusLabels.planning'),
+  active: t('projects.statusLabels.active'),
+  paused: t('projects.statusLabels.paused'),
+  completed: t('projects.statusLabels.completed'),
+  archived: t('projects.statusLabels.archived'),
+}));
 
 const statusColor = computed((): 'purple' | 'green' | 'yellow' | 'red' | 'blue' => {
   const map: Record<string, 'purple' | 'green' | 'yellow' | 'red' | 'blue'> = {
@@ -54,21 +57,21 @@ function formatDate(iso: string): string {
   const date = new Date(iso);
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return '今日建立';
-  if (diffDays === 1) return '昨日建立';
-  if (diffDays < 14) return `${diffDays} 天前建立`;
+  if (diffDays === 0) return t('projects.card.createdToday');
+  if (diffDays === 1) return t('projects.card.createdYesterday');
+  if (diffDays < 14) return t('projects.card.createdDaysAgo', { n: diffDays });
   const diffWeeks = Math.floor(diffDays / 7);
-  return `${diffWeeks} 週前建立`;
+  return t('projects.card.createdWeeksAgo', { n: diffWeeks });
 }
 
 const sprintProgressLabel = computed(() => {
   if (!props.stats) return '';
   const s = props.stats.activeSprint;
   if (s) {
-    return s.activeCount > 1 ? `${s.activeCount} 個 Sprint 總進度` : `${s.name} 進度`;
+    return s.activeCount > 1 ? t('projects.card.sprintsTotalProgress', { n: s.activeCount }) : t('projects.card.sprintProgress', { name: s.name });
   }
-  if (isCompleted.value) return '所有 Sprint 已完成';
-  return '無進行中 Sprint';
+  if (isCompleted.value) return t('projects.card.allSprintsDone');
+  return t('projects.card.noActiveSprint');
 });
 
 const sprintProgressPct = computed(() => {
@@ -81,8 +84,8 @@ const sprintProgressPct = computed(() => {
 const sprintFooterText = computed(() => {
   if (!props.stats) return '';
   if (props.stats.activeSprint) return props.stats.activeSprint.name;
-  if (isCompleted.value) return '所有 Sprint 已完成';
-  return '尚無進行中 Sprint';
+  if (isCompleted.value) return t('projects.card.allSprintsDone');
+  return t('projects.card.noActiveSprint');
 });
 </script>
 
@@ -150,12 +153,12 @@ const sprintFooterText = computed(() => {
       <!-- Stats row: task completion + sprint progress -->
       <div class="project-card__stats-row">
         <div class="project-card__stat-item">
-          <span class="project-card__stat-value">{{ stats.tasksDone }} / {{ stats.totalTasks }} 任務完成</span>
-          <span class="project-card__stat-label">任務完成</span>
+          <span class="project-card__stat-value">{{ $t('projects.card.tasksDoneOf', { done: stats.tasksDone, total: stats.totalTasks }) }}</span>
+          <span class="project-card__stat-label">{{ $t('projects.card.tasksDoneLabel') }}</span>
         </div>
         <div class="project-card__stat-item">
           <span class="project-card__stat-value">{{ sprintProgressPct }}%</span>
-          <span class="project-card__stat-label">Sprint 進度</span>
+          <span class="project-card__stat-label">{{ $t('projects.card.sprintProgressLabel') }}</span>
         </div>
       </div>
 

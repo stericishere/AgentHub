@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAgentsStore } from '../stores/agents';
 import BaseTag from '../components/common/BaseTag.vue';
 
+const { t, locale } = useI18n();
 const agentsStore = useAgentsStore();
+
+// Force re-render agent cards when locale changes (store functions read i18n.global.locale)
+const localeKey = computed(() => locale.value);
 
 const searchInput = ref('');
 const filterDepartment = ref('');
@@ -51,9 +56,13 @@ const departmentEntries = computed(() => {
   const result: Array<{ deptId: string; deptName: string; agents: typeof agentsStore.agents }> = [];
   for (const [deptId, agentList] of agentsStore.agentsByDepartment) {
     const deptInfo = agentsStore.departments.find((d) => d.id === deptId);
+    // i18n key first, fallback to DB name
+    const i18nKey = `agents.departments.${deptId}`;
+    const translated = t(i18nKey);
+    const deptName = translated !== i18nKey ? translated : (deptInfo?.name || deptId);
     result.push({
       deptId,
-      deptName: deptInfo?.name || deptId,
+      deptName,
       agents: agentList,
     });
   }
@@ -65,8 +74,8 @@ const departmentEntries = computed(() => {
   <div class="agents-view">
     <!-- Page Header -->
     <div class="agents-header">
-      <h2 class="agents-title">Agent 團隊</h2>
-      <span class="agents-count-badge">共 {{ agentsStore.agentCount }} 位</span>
+      <h2 class="agents-title">{{ $t('agents.title') }}</h2>
+      <span class="agents-count-badge">{{ $t('agents.total', { n: agentsStore.agentCount }) }}</span>
       <div class="agents-header-spacer"></div>
       <div class="agents-search-wrap">
         <svg class="agents-search-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -76,7 +85,7 @@ const departmentEntries = computed(() => {
         <input
           v-model="searchInput"
           type="text"
-          placeholder="搜尋 Agent..."
+          :placeholder="$t('agents.searchPlaceholder')"
           class="agents-search-input"
           @input="onSearchChange"
         />
@@ -86,13 +95,13 @@ const departmentEntries = computed(() => {
         class="agents-filter-select"
         @change="onDepartmentChange"
       >
-        <option value="">全部部門</option>
+        <option value="">{{ $t('agents.allDepartments') }}</option>
         <option
           v-for="dept in agentsStore.departments"
           :key="dept.id"
           :value="dept.id"
         >
-          {{ dept.name }}
+          {{ $t(`agents.departments.${dept.id}`) !== `agents.departments.${dept.id}` ? $t(`agents.departments.${dept.id}`) : dept.name }}
         </option>
       </select>
       <select
@@ -100,9 +109,9 @@ const departmentEntries = computed(() => {
         class="agents-filter-select"
         @change="onLevelChange"
       >
-        <option value="">全部等級</option>
-        <option value="L1">L1 主管</option>
-        <option value="L2">L2 成員</option>
+        <option value="">{{ $t('agents.allLevels') }}</option>
+        <option value="L1">{{ $t('agents.levelL1') }}</option>
+        <option value="L2">{{ $t('agents.levelL2') }}</option>
       </select>
     </div>
 
@@ -145,12 +154,12 @@ const departmentEntries = computed(() => {
             <path d="M16 3.13a4 4 0 010 7.75" />
           </svg>
         </div>
-        <div class="agents-empty-title">找不到符合條件的 Agent</div>
-        <div class="agents-empty-sub">嘗試調整篩選條件或清除搜尋關鍵字</div>
+        <div class="agents-empty-title">{{ $t('agents.noResults') }}</div>
+        <div class="agents-empty-sub">{{ $t('agents.noResultsDesc') }}</div>
       </div>
 
       <!-- Department Groups -->
-      <div v-else class="agents-dept-list">
+      <div v-else class="agents-dept-list" :key="localeKey">
         <div
           v-for="dept in departmentEntries"
           :key="dept.deptId"

@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useUiStore } from '../../stores/ui';
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const uiStore = useUiStore();
 
-const pageTitle = computed(() => (route.meta.title as string) || 'Maestro');
+const pageTitle = computed(() => {
+  const key = route.meta.titleKey as string | undefined;
+  return key ? t(key) : 'Maestro';
+});
 
 const showUserDropdown = ref(false);
 const userPillRef = ref<HTMLElement | null>(null);
@@ -74,7 +79,7 @@ onUnmounted(() => {
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />
         </svg>
-        <span>搜尋...</span>
+        <span>{{ $t('components.topbar.search') }}</span>
         <kbd
           class="rounded border border-border-light bg-bg-hover px-1.5 py-[1px] font-sans text-[11px]"
         >
@@ -85,7 +90,7 @@ onUnmounted(() => {
       <!-- Theme toggle -->
       <button
         class="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-lg border border-border-default bg-transparent text-sm text-text-muted transition-colors hover:bg-bg-hover hover:text-text-primary"
-        :title="uiStore.theme === 'dark' ? '切換亮色主題' : '切換暗色主題'"
+        :title="uiStore.theme === 'dark' ? $t('components.topbar.switchToLight') : $t('components.topbar.switchToDark')"
         @click="uiStore.toggleTheme()"
       >
         {{ uiStore.theme === 'dark' ? '\u25D1' : '\u25D0' }}
@@ -94,7 +99,7 @@ onUnmounted(() => {
       <!-- Settings gear -->
       <button
         class="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-lg border border-border-default bg-transparent text-sm text-text-muted transition-colors hover:bg-bg-hover hover:text-text-primary"
-        title="設定"
+        :title="$t('components.topbar.settingsTitle')"
         @click="goToSettings"
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useTasksStore, type TaskRecord } from '../../stores/tasks';
 import BaseTag from '../common/BaseTag.vue';
 
+const { t } = useI18n();
 const tasksStore = useTasksStore();
 
 const task = computed<TaskRecord | null>(() => tasksStore.selectedTask);
@@ -96,12 +98,9 @@ const checklist = computed(() => parseChecklist(parsed.value.acceptance));
 
 // --- Priority / Status helpers ---
 
-const priorityLabel: Record<string, string> = {
-  critical: '緊急',
-  high: '高',
-  medium: '中',
-  low: '低',
-};
+function priorityLabel(key: string): string {
+  return t('taskboard.priorityLabels.' + key) || key;
+}
 
 const priorityColor: Record<string, 'red' | 'yellow' | 'blue' | 'purple'> = {
   critical: 'red',
@@ -110,15 +109,9 @@ const priorityColor: Record<string, 'red' | 'yellow' | 'blue' | 'purple'> = {
   low: 'purple',
 };
 
-const statusLabel: Record<string, string> = {
-  created: '待做',
-  assigned: '已分配',
-  in_progress: '進行中',
-  in_review: '審查中',
-  blocked: '已阻塞',
-  rejected: '已退回',
-  done: '完成',
-};
+function statusLabel(key: string): string {
+  return t('taskboard.columnLabels.' + key) || t('taskboard.statusLabels.' + key) || key;
+}
 
 const statusColor: Record<string, string> = {
   created: 'var(--color-text-muted)',
@@ -153,10 +146,10 @@ function formatDate(iso: string | null): string {
               class="status-badge"
               :style="{ background: statusColor[task.status] + '22', color: statusColor[task.status] }"
             >
-              {{ statusLabel[task.status] ?? task.status }}
+              {{ statusLabel(task.status) }}
             </span>
             <div class="header-spacer"></div>
-            <button class="close-btn" @click="close" aria-label="關閉">
+            <button class="close-btn" @click="close" :aria-label="$t('common.close')">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
@@ -168,36 +161,36 @@ function formatDate(iso: string | null): string {
           <!-- Meta info grid -->
           <div class="meta-grid">
             <div class="meta-item">
-              <span class="meta-label">優先級</span>
+              <span class="meta-label">{{ t("taskboard.detailPanel.priority") }}</span>
               <BaseTag :color="priorityColor[task.priority]">
-                {{ priorityLabel[task.priority] }}
+                {{ priorityLabel(task.priority) }}
               </BaseTag>
             </div>
             <div class="meta-item">
-              <span class="meta-label">指派給</span>
+              <span class="meta-label">{{ t("taskboard.detailPanel.assignedTo") }}</span>
               <span class="meta-value">{{ task.assignedTo ?? '—' }}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-label">Sprint</span>
+              <span class="meta-label">{{ $t('taskboard.detailPanel.sprint') }}</span>
               <span class="meta-value">{{ task.sprintName ?? '—' }}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-label">預估工時</span>
+              <span class="meta-label">{{ t("taskboard.detailPanel.estimatedHours") }}</span>
               <span class="meta-value">{{ task.estimatedHours != null ? task.estimatedHours + 'h' : '—' }}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-label">實際工時</span>
+              <span class="meta-label">{{ t("taskboard.detailPanel.actualHours") }}</span>
               <span class="meta-value">{{ task.actualHours != null ? task.actualHours + 'h' : '—' }}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-label">建立時間</span>
+              <span class="meta-label">{{ t("taskboard.detailPanel.createdAt") }}</span>
               <span class="meta-value">{{ formatDate(task.createdAt) }}</span>
             </div>
           </div>
 
           <!-- Dependencies -->
           <div v-if="task.dependsOn.length > 0" class="section">
-            <h3 class="section-title">依賴關係</h3>
+            <h3 class="section-title">{{ t("taskboard.detailPanel.dependencies") }}</h3>
             <div class="dep-list">
               <span v-for="dep in task.dependsOn" :key="dep" class="dep-chip">{{ dep }}</span>
             </div>
@@ -205,7 +198,7 @@ function formatDate(iso: string | null): string {
 
           <!-- Tags -->
           <div v-if="task.tags" class="section">
-            <h3 class="section-title">標籤</h3>
+            <h3 class="section-title">{{ t("taskboard.detailPanel.tags") }}</h3>
             <div class="tag-list">
               <span
                 v-for="tag in task.tags.split(',').map((t: string) => t.trim()).filter(Boolean)"
@@ -217,13 +210,13 @@ function formatDate(iso: string | null): string {
 
           <!-- Description -->
           <div v-if="parsed.description" class="section">
-            <h3 class="section-title">任務描述</h3>
+            <h3 class="section-title">{{ t("taskboard.detailPanel.taskDescription") }}</h3>
             <div class="description-body">{{ parsed.description }}</div>
           </div>
 
           <!-- Acceptance criteria -->
           <div v-if="checklist.length > 0" class="section">
-            <h3 class="section-title">驗收標準</h3>
+            <h3 class="section-title">{{ t("taskboard.detailPanel.acceptance") }}</h3>
             <ul class="checklist">
               <li v-for="(item, i) in checklist" :key="i" class="check-item">
                 <span class="check-box" :class="{ 'check-box--done': item.checked }">
@@ -236,7 +229,7 @@ function formatDate(iso: string | null): string {
 
           <!-- Event timeline -->
           <div v-if="timeline.length > 0" class="section">
-            <h3 class="section-title">事件紀錄</h3>
+            <h3 class="section-title">{{ t("taskboard.detailPanel.events") }}</h3>
             <div class="timeline">
               <div v-for="(evt, i) in timeline" :key="i" class="timeline-item">
                 <div class="timeline-dot"></div>

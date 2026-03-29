@@ -4,6 +4,7 @@ export default { name: 'SessionsView' };
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick, defineAsyncComponent } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   useSessionsStore,
   type LayoutMode,
@@ -25,6 +26,7 @@ const SessionLauncher = defineAsyncComponent(() => import('../components/session
 const GateReviewBanner = defineAsyncComponent(() => import('../components/gate/GateReviewBanner.vue'));
 import VirtualList from '../components/common/VirtualList.vue';
 
+const { t } = useI18n();
 const sessionsStore = useSessionsStore();
 const tasksStore = useTasksStore();
 const uiStore = useUiStore();
@@ -35,11 +37,11 @@ const ipc = useIpc();
 const scrollContainer = ref<HTMLElement | null>(null);
 const collapsedGroups = ref<Set<string>>(new Set());
 
-const groupOptions: { value: SessionGroupMode; label: string }[] = [
-  { value: 'none', label: '不分組' },
-  { value: 'project', label: '按專案' },
-  { value: 'department', label: '按部門' },
-];
+const groupOptions = computed<{ value: SessionGroupMode; label: string }[]>(() => [
+  { value: 'none', label: t('sessions.groupNone') },
+  { value: 'project', label: t('sessions.groupByProject') },
+  { value: 'department', label: t('sessions.groupByDept') },
+]);
 
 function toggleGroupCollapse(key: string) {
   if (collapsedGroups.value.has(key)) {
@@ -103,12 +105,12 @@ function navigateToTask(taskId: string) {
   router.push(`/tasks/${taskId}`);
 }
 
-const layoutOptions: { value: LayoutMode; label: string; svg: string }[] = [
-  { value: 'list', label: '清單', svg: '<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="1" width="14" height="2" rx="0.5"/><rect x="0" y="6" width="14" height="2" rx="0.5"/><rect x="0" y="11" width="14" height="2" rx="0.5"/></svg>' },
-  { value: 'single', label: '單欄', svg: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="12" height="12" rx="1"/></svg>' },
-  { value: 'dual', label: '雙欄', svg: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="5" height="12" rx="1"/><rect x="8" y="1" width="5" height="12" rx="1"/></svg>' },
-  { value: 'triple', label: '三欄', svg: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.5" y="1" width="3.5" height="12" rx="1"/><rect x="5.25" y="1" width="3.5" height="12" rx="1"/><rect x="10" y="1" width="3.5" height="12" rx="1"/></svg>' },
-];
+const layoutOptions = computed<{ value: LayoutMode; label: string; svg: string }[]>(() => [
+  { value: 'list', label: t('sessions.layoutList'), svg: '<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><rect x="0" y="1" width="14" height="2" rx="0.5"/><rect x="0" y="6" width="14" height="2" rx="0.5"/><rect x="0" y="11" width="14" height="2" rx="0.5"/></svg>' },
+  { value: 'single', label: t('sessions.layoutSingle'), svg: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="12" height="12" rx="1"/></svg>' },
+  { value: 'dual', label: t('sessions.layoutDual'), svg: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="5" height="12" rx="1"/><rect x="8" y="1" width="5" height="12" rx="1"/></svg>' },
+  { value: 'triple', label: t('sessions.layoutTriple'), svg: '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="0.5" y="1" width="3.5" height="12" rx="1"/><rect x="5.25" y="1" width="3.5" height="12" rx="1"/><rect x="10" y="1" width="3.5" height="12" rx="1"/></svg>' },
+]);
 
 const selectedSession = computed(() => sessionsStore.selectedSession);
 
@@ -238,12 +240,12 @@ async function handleRequestSummary(session: ActiveSession) {
   try {
     const result = await ipc.requestSummary(session.sessionId);
     if (result) {
-      uiStore.addToast(`${session.agentName} 的摘要已成功產生並儲存。`, 'success', '摘要已儲存');
+      uiStore.addToast(t('sessions.summaryStoredDesc', { agent: session.agentName }), 'success', t('sessions.summaryStored'));
     } else {
-      uiStore.addToast('摘要間隔過短，請稍後再試。', 'info', '摘要跳過');
+      uiStore.addToast(t('sessions.summarySkippedDesc'), 'info', t('sessions.summarySkipped'));
     }
   } catch (err) {
-    uiStore.addToast(`無法產生 ${session.agentName} 的摘要。`, 'error', '摘要失敗');
+    uiStore.addToast(t('sessions.summaryFailedDesc', { agent: session.agentName }), 'error', t('sessions.summaryFailed'));
   }
 }
 </script>
@@ -255,7 +257,7 @@ async function handleRequestSummary(session: ActiveSession) {
     <div class="sessions-header">
       <!-- Top row: title + controls -->
       <div class="sessions-header__top">
-        <h1 class="sessions-header__title">工作階段</h1>
+        <h1 class="sessions-header__title">{{ $t('sessions.title') }}</h1>
 
         <div class="sessions-header__actions">
           <!-- Gate Banner (compact, inline) -->
@@ -306,7 +308,7 @@ async function handleRequestSummary(session: ActiveSession) {
             <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" class="sessions-header__new-icon">
               <path d="M7 2v10M2 7h10"/>
             </svg>
-            新增工作階段
+            {{ $t('sessions.newSession') }}
           </BaseButton>
         </div>
       </div>
@@ -322,7 +324,7 @@ async function handleRequestSummary(session: ActiveSession) {
           "
           @click="activeViewTab = 'active'"
         >
-          執行中
+          {{ $t('sessions.active') }}
           <span
             v-if="sessionsStore.activeCount > 0"
             class="sessions-tabs__badge"
@@ -337,7 +339,7 @@ async function handleRequestSummary(session: ActiveSession) {
           "
           @click="activeViewTab = 'history'"
         >
-          歷史紀錄
+          {{ $t('sessions.history') }}
           <span
             v-if="sessionsStore.resumableSessions.length > 0"
             class="sessions-tabs__count"
@@ -361,7 +363,7 @@ async function handleRequestSummary(session: ActiveSession) {
             v-if="sessionsStore.activeSessions.length > 0"
             class="sessions-section-header"
           >
-            執行中 — {{ sessionsStore.activeSessions.length }} 個工作階段
+            {{ $t('sessions.activeCount', { n: sessionsStore.activeSessions.length }) }}
           </div>
           <SessionGrid
             :sessions="sessionsStore.activeSessions"
@@ -420,13 +422,13 @@ async function handleRequestSummary(session: ActiveSession) {
             <rect x="2" y="3" width="20" height="18" rx="2"/>
             <path d="M8 7h8M8 11h5"/>
           </svg>
-          <p class="sessions-empty__title">尚無執行中的工作階段</p>
-          <p class="sessions-empty__subtitle">啟動一個新的 Agent 工作階段開始工作</p>
+          <p class="sessions-empty__title">{{ $t('sessions.noActive') }}</p>
+          <p class="sessions-empty__subtitle">{{ $t('sessions.noActiveDesc') }}</p>
           <button
             class="sessions-empty__action"
             @click="showLauncher = true"
           >
-            啟動新的工作階段
+            {{ $t('sessions.startNew') }}
           </button>
         </div>
       </div>
@@ -465,7 +467,7 @@ async function handleRequestSummary(session: ActiveSession) {
                   v-if="['running', 'thinking', 'starting', 'summarizing'].includes(selectedSession.status)"
                   class="sessions-terminal-panel__status-pulse"
                 />
-                {{ { running: '執行中', thinking: '思考中', starting: '啟動中', executing_tool: '執行工具', awaiting_approval: '等待核准', waiting_input: '等待輸入', summarizing: '摘要中', completed: '已完成', failed: '失敗', stopped: '已停止' }[selectedSession.status] || selectedSession.status }}
+                {{ { running: $t('sessions.statusLabels.running'), thinking: $t('sessions.statusLabels.thinking'), starting: $t('sessions.statusLabels.starting'), executing_tool: $t('sessions.statusLabels.executing_tool'), awaiting_approval: $t('sessions.statusLabels.awaiting_approval'), waiting_input: $t('sessions.statusLabels.waiting_input'), summarizing: $t('sessions.statusLabels.summarizing'), completed: $t('sessions.statusLabels.completed'), failed: $t('sessions.statusLabels.failed'), stopped: $t('sessions.statusLabels.stopped') }[selectedSession.status] || selectedSession.status }}
               </span>
             </div>
             <div class="sessions-terminal-panel__task">{{ selectedSession.task }}</div>
@@ -498,12 +500,12 @@ async function handleRequestSummary(session: ActiveSession) {
               <span class="sessions-terminal-panel__stat-value">{{ selectedSession.turnsCount }}</span>
             </div>
             <div class="sessions-terminal-panel__stat">
-              <span class="sessions-terminal-panel__stat-label">時長</span>
+              <span class="sessions-terminal-panel__stat-label">{{ $t('sessions.duration') }}</span>
               <span class="sessions-terminal-panel__stat-value">{{ formatDuration(selectedSession.durationMs) }}</span>
             </div>
             <div class="sessions-terminal-panel__stat">
-              <span class="sessions-terminal-panel__stat-label">次數</span>
-              <span class="sessions-terminal-panel__stat-value">{{ selectedSession.turnsCount }} 次</span>
+              <span class="sessions-terminal-panel__stat-label">{{ $t('sessions.turns') }}</span>
+              <span class="sessions-terminal-panel__stat-value">{{ selectedSession.turnsCount }}</span>
             </div>
           </div>
           <!-- Action buttons -->
@@ -513,21 +515,21 @@ async function handleRequestSummary(session: ActiveSession) {
           >
             <button
               class="sessions-terminal-panel__action-btn"
-              @click="openDelegation(selectedSession)"
+              @click="openTaskAssigner(selectedSession)"
             >
-              傳送指令
+              {{ $t('sessions.assignTask') }}
             </button>
             <button
               class="sessions-terminal-panel__action-btn"
-              @click="openTaskAssigner(selectedSession)"
+              @click="handleRequestSummary(selectedSession)"
             >
-              指派任務
+              {{ $t('sessions.summaryReport') }}
             </button>
             <button
               class="sessions-terminal-panel__action-btn sessions-terminal-panel__action-btn--primary"
-              @click="handleRequestSummary(selectedSession)"
+              @click="openDelegation(selectedSession)"
             >
-              摘要報告
+              {{ $t('sessions.delegate') }}
             </button>
           </div>
           <div v-else class="sessions-terminal-panel__actions">
@@ -535,14 +537,14 @@ async function handleRequestSummary(session: ActiveSession) {
               class="sessions-terminal-panel__action-btn"
               @click="handleRequestSummary(selectedSession)"
             >
-              產生摘要
+              {{ $t('sessions.generateSummary') }}
             </button>
             <button
               v-if="!['completed', 'failed', 'stopped'].includes(selectedSession.status)"
               class="sessions-terminal-panel__action-btn sessions-terminal-panel__action-btn--danger"
               @click="handleStop(selectedSession.sessionId)"
             >
-              停止
+              {{ $t('sessions.stop') }}
             </button>
           </div>
         </div>
@@ -561,8 +563,8 @@ async function handleRequestSummary(session: ActiveSession) {
             <circle cx="12" cy="12" r="10"/>
             <path d="M12 6v6l4 2"/>
           </svg>
-          <p class="sessions-empty__title">尚無可繼續的工作階段</p>
-          <p class="sessions-empty__subtitle">各專案工作目錄中的 Claude 對話將顯示於此</p>
+          <p class="sessions-empty__title">{{ $t('sessions.noResumable') }}</p>
+          <p class="sessions-empty__subtitle">{{ $t('sessions.noResumableDesc') }}</p>
         </div>
 
         <!-- History virtual list -->
@@ -599,10 +601,10 @@ async function handleRequestSummary(session: ActiveSession) {
               <!-- Resume button -->
               <button
                 class="history-row__resume-btn"
-                title="繼續此工作階段"
+                :title="$t('sessions.resume')"
                 @click.stop="handleResumeConversation(item)"
               >
-                繼續
+                {{ $t('sessions.resume') }}
               </button>
             </div>
           </template>
@@ -634,13 +636,13 @@ async function handleRequestSummary(session: ActiveSession) {
               </svg>
             </div>
             <div>
-              <h3 class="modal-header__title">指派任務</h3>
-              <p class="modal-header__subtitle">將任務指派給 {{ assignTargetSession.agentName }}</p>
+              <h3 class="modal-header__title">{{ $t('sessions.assignModal.title') }}</h3>
+              <p class="modal-header__subtitle">{{ $t('sessions.assignModal.subtitle', { agent: assignTargetSession.agentName }) }}</p>
             </div>
           </div>
 
           <div v-if="assignableTasks.length === 0" class="modal-empty-list">
-            此專案沒有可指派的任務
+            {{ $t('sessions.assignModal.noTasks') }}
           </div>
           <div v-else class="modal-scroll-list">
             <button
@@ -670,7 +672,7 @@ async function handleRequestSummary(session: ActiveSession) {
           </div>
           <div class="modal-footer modal-footer--end">
             <BaseButton variant="ghost" size="sm" @click="showTaskAssigner = false">
-              取消
+              {{ $t('common.cancel') }}
             </BaseButton>
           </div>
         </div>
@@ -693,21 +695,21 @@ async function handleRequestSummary(session: ActiveSession) {
               </svg>
             </div>
             <div>
-              <h3 class="modal-header__title">傳送指令給其他 Session</h3>
+              <h3 class="modal-header__title">{{ $t('sessions.delegateModal.title') }}</h3>
               <p class="modal-header__subtitle">
-                從 <span class="modal-header__emphasis">{{ delegationSource.agentName }}</span> 傳送，完成後自動回傳結果
+                {{ $t('sessions.delegateModal.subtitle', { agent: delegationSource.agentName }) }}
               </p>
             </div>
           </div>
 
           <!-- Target session picker -->
           <div class="modal-field">
-            <label class="modal-field__label">選擇目標 Session</label>
+            <label class="modal-field__label">{{ $t('sessions.delegateModal.selectTarget') }}</label>
             <div
               v-if="delegationTargets.length === 0"
               class="modal-empty-list"
             >
-              同專案內沒有其他執行中的 Session
+              {{ $t('sessions.delegateModal.noTargets') }}
             </div>
             <div v-else class="modal-scroll-list modal-scroll-list--sm">
               <button
@@ -741,18 +743,18 @@ async function handleRequestSummary(session: ActiveSession) {
 
           <!-- Instruction textarea -->
           <div class="modal-field">
-            <label class="modal-field__label">指令內容</label>
+            <label class="modal-field__label">{{ $t('sessions.delegateModal.instructionLabel') }}</label>
             <textarea
               v-model="delegationInstruction"
               rows="3"
               class="modal-textarea"
-              placeholder="例如：請幫我完成 login 頁面的 UI 實作..."
+              :placeholder="$t('sessions.delegateModal.instructionPlaceholder')"
             />
           </div>
 
           <div class="modal-footer modal-footer--end">
             <BaseButton variant="ghost" size="sm" @click="showDelegation = false">
-              取消
+              {{ $t('common.cancel') }}
             </BaseButton>
             <BaseButton
               variant="primary"
@@ -760,7 +762,7 @@ async function handleRequestSummary(session: ActiveSession) {
               :disabled="!delegationTargetId || !delegationInstruction.trim()"
               @click="handleSendDelegation"
             >
-              傳送
+              {{ $t('sessions.delegateModal.send') }}
             </BaseButton>
           </div>
         </div>

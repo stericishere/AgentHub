@@ -5,10 +5,10 @@
       <!-- Skill Actions -->
       <div class="skill-actions">
         <button class="btn btn-outline" @click="showExportModal = true">
-          📤 匯出
+          📤 {{ t('harness.skill.export') }}
         </button>
         <button class="btn btn-outline" @click="showImportModal = true">
-          📥 匯入
+          📥 {{ t('harness.skill.import') }}
         </button>
       </div>
 
@@ -23,13 +23,13 @@
             v-model="store.searchQuery"
             type="text"
             class="search-input"
-            placeholder="搜尋 Skill..."
+            :placeholder="t('harness.skill.searchPlaceholder')"
           />
         </div>
 
         <div class="filter-wrap">
           <select v-model="store.projectFilter" class="project-filter">
-            <option value="all">全部</option>
+            <option value="all">{{ t('harness.skill.filterAll') }}</option>
             <option
               v-for="proj in projectPaths"
               :key="proj"
@@ -47,13 +47,13 @@
         <!-- Empty State -->
         <div v-if="store.filteredSkills.length === 0 && !store.loading" class="empty-state">
           <span class="empty-icon">🧩</span>
-          <p class="empty-title">尚無 Skill</p>
-          <p class="empty-desc">透過 Agent 對話建立第一個 Skill</p>
+          <p class="empty-title">{{ t('harness.skill.noSkills') }}</p>
+          <p class="empty-desc">{{ t('harness.skill.noSkillsDesc') }}</p>
         </div>
 
         <!-- Loading -->
         <div v-else-if="store.loading" class="loading-state">
-          載入中...
+          {{ t('harness.skill.loading') }}
         </div>
 
         <!-- Items -->
@@ -73,7 +73,7 @@
               <button
                 v-if="skill.source === 'custom'"
                 class="edit-btn"
-                title="編輯"
+                :title="t('harness.skill.editTitle')"
                 @click.stop="onEditSkill(skill)"
               >✏️</button>
             </div>
@@ -83,7 +83,7 @@
               <span v-if="skill.source === 'system'" class="tag tag-system">System</span>
               <span v-else class="tag tag-custom">Custom</span>
               <!-- Scope tag -->
-              <span v-if="skill.scope === 'global'" class="tag tag-global">全域</span>
+              <span v-if="skill.scope === 'global'" class="tag tag-global">{{ t('harness.skill.scopeGlobal') }}</span>
               <span v-else class="tag tag-project">{{ projLabel(skill.projectPath) }}</span>
             </div>
           </div>
@@ -96,7 +96,7 @@
     <div v-if="showExportModal" class="modal-overlay" @click.self="showExportModal = false">
       <div class="modal">
         <div class="modal-header">
-          <h3>匯出 Skills</h3>
+          <h3>{{ t('harness.skill.exportTitle') }}</h3>
           <button class="modal-close" @click="showExportModal = false">&times;</button>
         </div>
         <div class="modal-body">
@@ -104,9 +104,9 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" @click="copyExportJson">
-            {{ copied ? '✓ 已複製' : '📋 複製到剪貼板' }}
+            {{ copied ? t('harness.skill.copiedLabel') : t('harness.skill.copyLabel') }}
           </button>
-          <button class="btn btn-outline" @click="showExportModal = false">關閉</button>
+          <button class="btn btn-outline" @click="showExportModal = false">{{ t('harness.skill.close') }}</button>
         </div>
       </div>
     </div>
@@ -115,34 +115,34 @@
     <div v-if="showImportModal" class="modal-overlay" @click.self="showImportModal = false">
       <div class="modal">
         <div class="modal-header">
-          <h3>匯入 Skills</h3>
+          <h3>{{ t('harness.skill.importTitle') }}</h3>
           <button class="modal-close" @click="showImportModal = false">&times;</button>
         </div>
         <div class="modal-body">
           <textarea
             v-model="importJson"
             class="json-input"
-            placeholder="貼上 JSON..."
+            :placeholder="t('harness.skill.importJsonPlaceholder')"
           ></textarea>
           <div v-if="importError" class="import-error">{{ importError }}</div>
           <div v-if="importResult" class="import-result">
-            <p v-if="importResult.imported.length">✅ 匯入: {{ importResult.imported.join(', ') }}</p>
-            <p v-if="importResult.skipped.length">⏭ 跳過: {{ importResult.skipped.join(', ') }}</p>
-            <p v-if="importResult.overwritten.length">🔄 覆寫: {{ importResult.overwritten.join(', ') }}</p>
-            <p v-if="importResult.errors.length">❌ 錯誤: {{ importResult.errors.join(', ') }}</p>
+            <p v-if="importResult.imported.length">{{ t('harness.skill.importResultImported', { list: importResult.imported.join(', ') }) }}</p>
+            <p v-if="importResult.skipped.length">{{ t('harness.skill.importResultSkipped', { list: importResult.skipped.join(', ') }) }}</p>
+            <p v-if="importResult.overwritten.length">{{ t('harness.skill.importResultOverwritten', { list: importResult.overwritten.join(', ') }) }}</p>
+            <p v-if="importResult.errors.length">{{ t('harness.skill.importResultErrors', { list: importResult.errors.join(', ') }) }}</p>
           </div>
         </div>
         <div class="modal-footer">
           <div v-if="showConflictChoice" class="conflict-choice">
-            <span>偵測到重複 Skill，如何處理？</span>
-            <button class="btn btn-outline" @click="doImport('skip')">跳過重複</button>
-            <button class="btn btn-warning" @click="doImport('overwrite')">覆蓋重複</button>
+            <span>{{ t('harness.skill.conflictDetected') }}</span>
+            <button class="btn btn-outline" @click="doImport('skip')">{{ t('harness.skill.skipDuplicates') }}</button>
+            <button class="btn btn-warning" @click="doImport('overwrite')">{{ t('harness.skill.overwriteDuplicates') }}</button>
           </div>
           <template v-else>
             <button class="btn btn-primary" @click="handleImport" :disabled="!importJson.trim()">
-              匯入
+              {{ t('harness.skill.doImport') }}
             </button>
-            <button class="btn btn-outline" @click="closeImportModal">關閉</button>
+            <button class="btn btn-outline" @click="closeImportModal">{{ t('harness.skill.close') }}</button>
           </template>
         </div>
       </div>
@@ -153,7 +153,7 @@
       <!-- No Selection State -->
       <div v-if="!store.selectedSkill" class="no-selection">
         <span class="no-sel-icon">🧩</span>
-        <p class="no-sel-text">從左側選擇一個 Skill 查看詳情</p>
+        <p class="no-sel-text">{{ t('harness.skill.selectPrompt') }}</p>
       </div>
 
       <!-- Selected Skill Detail — always preview -->
@@ -172,7 +172,7 @@
               <span class="detail-path">{{ store.selectedSkill.path }}</span>
               <span class="detail-status is-enabled">
                 <span class="status-dot"></span>
-                已啟用
+                {{ t('harness.skill.statusEnabled') }}
               </span>
             </div>
           </div>
@@ -181,19 +181,19 @@
         <!-- Detail Body -->
         <div class="detail-body">
           <div v-if="store.selectedSkill.content" class="md-block">{{ store.selectedSkill.content }}</div>
-          <p v-else class="md-p no-content-text">（此 Skill 尚無內容）</p>
+          <p v-else class="md-p no-content-text">{{ t('harness.skill.noContent') }}</p>
         </div>
 
         <!-- Detail Footer -->
         <div class="detail-footer">
           <div class="footer-meta" v-if="store.selectedSkill.updatedAt">
-            更新時間：<span class="footer-mono">{{ store.selectedSkill.updatedAt }}</span>
+            {{ t('harness.skill.updatedAt') }}<span class="footer-mono">{{ store.selectedSkill.updatedAt }}</span>
           </div>
           <div class="footer-meta" v-if="store.selectedSkill.fileSize !== undefined">
-            大小：<span class="footer-mono">{{ formatSize(store.selectedSkill.fileSize) }}</span>
+            {{ t('harness.skill.fileSize') }}<span class="footer-mono">{{ formatSize(store.selectedSkill.fileSize) }}</span>
           </div>
           <div class="footer-meta">
-            範圍：<span class="footer-mono">{{ store.selectedSkill.scope === 'global' ? '全域' : projLabel(store.selectedSkill.projectPath) }}</span>
+            {{ t('harness.skill.scope') }}<span class="footer-mono">{{ store.selectedSkill.scope === 'global' ? t('harness.skill.scopeGlobal') : projLabel(store.selectedSkill.projectPath) }}</span>
           </div>
         </div>
       </div>
@@ -203,10 +203,12 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useHarnessStore } from '../../stores/harness';
 import { useIpc } from '../../composables/useIpc';
 import type { SkillItem } from '../../stores/harness';
 
+const { t } = useI18n();
 const store = useHarnessStore();
 const ipc = useIpc();
 
@@ -252,11 +254,11 @@ function handleImport() {
   try {
     bundle = JSON.parse(importJson.value);
   } catch (e) {
-    importError.value = `JSON 解析失敗: ${String(e)}`;
+    importError.value = t('harness.skill.jsonParseError', { msg: String(e) });
     return;
   }
   if (!bundle.version || !Array.isArray(bundle.skills)) {
-    importError.value = 'JSON 格式不正確：缺少 version 或 skills 欄位';
+    importError.value = t('harness.skill.jsonFormatError');
     return;
   }
   parsedBundle.value = bundle;
@@ -280,7 +282,7 @@ async function doImport(onConflict: 'skip' | 'overwrite') {
     };
     await store.fetchSkills();
   } catch (e) {
-    importError.value = `匯入失敗: ${String(e)}`;
+    importError.value = t('harness.skill.importFailed', { msg: String(e) });
   }
 }
 
@@ -303,7 +305,7 @@ const projectPaths = computed(() => {
 });
 
 function projLabel(path?: string): string {
-  if (!path) return '未知專案';
+  if (!path) return t('harness.skill.unknownProject');
   const parts = path.replace(/\\/g, '/').split('/');
   return parts[parts.length - 1] || path;
 }

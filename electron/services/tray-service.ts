@@ -2,6 +2,7 @@ import { Tray, Menu, nativeImage, app, BrowserWindow } from 'electron';
 import { join } from 'path';
 import { sessionManager } from './session-manager';
 import { logger } from '../utils/logger';
+import { t } from '../utils/i18n';
 
 class TrayService {
   private tray: Tray | null = null;
@@ -37,19 +38,19 @@ class TrayService {
       },
       { type: 'separator' },
       {
-        label: '顯示視窗',
+        label: t('electron.tray.showWindow'),
         click: () => {
           mainWindow.show();
           mainWindow.focus();
         },
       },
       {
-        label: `Sessions: ${activeCount} 執行中`,
+        label: t('electron.tray.sessions', { n: activeCount }),
         enabled: false,
       },
       { type: 'separator' },
       {
-        label: '結束',
+        label: t('electron.tray.quit'),
         click: () => {
           app.quit();
         },

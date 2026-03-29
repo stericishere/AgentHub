@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useIpc } from '../composables/useIpc';
 import { useSessionsStore } from '../stores/sessions';
 import { useAgentsStore } from '../stores/agents';
@@ -14,6 +15,7 @@ import BaseTag from '../components/common/BaseTag.vue';
 import ProgressBar from '../components/common/ProgressBar.vue';
 
 const router = useRouter();
+const { t } = useI18n();
 const { getHealth, listSprints, getPitfallOverdue } = useIpc();
 const sessionsStore = useSessionsStore();
 const agentsStore = useAgentsStore();
@@ -87,27 +89,27 @@ const sprintGateProgress = computed(() => {
   return map;
 });
 
-const statusLabel: Record<string, string> = {
-  starting: '啟動中',
-  running: '執行中',
-  thinking: '思考中',
-  executing_tool: '執行工具',
-  awaiting_approval: '等待核准',
-  waiting_input: '等待輸入',
-  completed: '已完成',
-  failed: '失敗',
-  stopped: '已停止',
-};
+const statusLabel = computed<Record<string, string>>(() => ({
+  starting: t('sessions.statusLabels.starting'),
+  running: t('sessions.statusLabels.running'),
+  thinking: t('sessions.statusLabels.thinking'),
+  executing_tool: t('sessions.statusLabels.executing_tool'),
+  awaiting_approval: t('sessions.statusLabels.awaiting_approval'),
+  waiting_input: t('sessions.statusLabels.waiting_input'),
+  completed: t('status.completed'),
+  failed: t('status.failed'),
+  stopped: t('status.stopped'),
+}));
 
-const gateTypeLabel: Record<string, string> = {
-  G0: '需求確認',
-  G1: '圖稿審核',
-  G2: '程式碼審查',
-  G3: '測試驗收',
-  G4: '文件審查',
-  G5: '部署就緒',
-  G6: '正式發佈',
-};
+const gateTypeLabel = computed<Record<string, string>>(() => ({
+  G0: t('gates.typeLabels.G0'),
+  G1: t('gates.typeLabels.G1'),
+  G2: t('gates.typeLabels.G2'),
+  G3: t('gates.typeLabels.G3'),
+  G4: t('gates.typeLabels.G4'),
+  G5: t('gates.typeLabels.G5'),
+  G6: t('gates.typeLabels.G6'),
+}));
 
 const pendingTasks = computed(() =>
   tasksStore.tasks
@@ -115,15 +117,15 @@ const pendingTasks = computed(() =>
     .slice(0, 5),
 );
 
-const taskStatusLabel: Record<string, string> = {
-  created: '待處理',
-  assigned: '已分配',
-  in_progress: '進行中',
-  in_review: '審查中',
-  blocked: '阻塞',
-  rejected: '已退回',
-  done: '完成',
-};
+const taskStatusLabel = computed<Record<string, string>>(() => ({
+  created: t('taskboard.columnLabels.created'),
+  assigned: t('taskboard.columnLabels.assigned'),
+  in_progress: t('taskboard.columnLabels.in_progress'),
+  in_review: t('taskboard.columnLabels.in_review'),
+  blocked: t('status.blocked'),
+  rejected: t('status.rejected'),
+  done: t('taskboard.columnLabels.done'),
+}));
 
 const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | 'red'> = {
   created: 'purple',
@@ -141,23 +143,23 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
     <!-- ── Stat Cards Row ─────────────────────────────────────── -->
     <div class="stat-row">
       <StatCard
-        label="代理人"
+        :label="$t('dashboard.statAgents')"
         :value="agentsStore.agentCount"
       />
       <StatCard
-        label="執行中"
+        :label="$t('dashboard.statRunning')"
         :value="sessionsStore.activeCount"
-        :change="sessionsStore.activeCount > 0 ? '運行中' : undefined"
+        :change="sessionsStore.activeCount > 0 ? $t('dashboard.running') : undefined"
         change-color="green"
       />
       <StatCard
-        label="專案"
+        :label="$t('dashboard.statProjects')"
         :value="projectsStore.projectCount"
-        :change="projectsStore.activeProjects.length > 0 ? `${projectsStore.activeProjects.length} 進行中` : undefined"
+        :change="projectsStore.activeProjects.length > 0 ? $t('dashboard.inProgress', { n: projectsStore.activeProjects.length }) : undefined"
         change-color="blue"
       />
       <StatCard
-        label="今日用量"
+        :label="$t('dashboard.statUsage')"
         value="—"
         change-color="muted"
       />
@@ -167,7 +169,7 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
     <section v-if="overduePitfalls.length > 0" class="pitfall-alert-section">
       <div class="section-header danger">
         <span class="section-icon">⚠️</span>
-        <h2>逾期踩坑提醒</h2>
+        <h2>{{ $t('dashboard.pitfallAlert') }}</h2>
         <span class="badge danger">{{ overduePitfalls.length }}</span>
       </div>
       <div class="pitfall-cards">
@@ -178,12 +180,12 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
         >
           <div class="pitfall-header">
             <span class="pitfall-project">{{ pitfall.project }}</span>
-            <span class="pitfall-overdue">逾期 {{ pitfall.daysOverdue }} 天</span>
+            <span class="pitfall-overdue">{{ $t('dashboard.overdueDays', { n: pitfall.daysOverdue }) }}</span>
           </div>
           <div class="pitfall-title">{{ pitfall.title }}</div>
           <div class="pitfall-meta">
             <span class="pitfall-category">{{ pitfall.category }}</span>
-            <span class="pitfall-due">到期: {{ pitfall.dueDate }}</span>
+            <span class="pitfall-due">{{ $t('dashboard.dueDate', { date: pitfall.dueDate }) }}</span>
           </div>
           <div v-if="pitfall.problem" class="pitfall-problem">{{ pitfall.problem }}</div>
         </div>
@@ -199,15 +201,15 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
         <!-- Active Sprints -->
         <div class="section-card">
           <div class="card-header">
-            <h3 class="card-title">進行中 Sprint</h3>
-            <button class="card-link" @click="router.push({ name: 'projects' })">查看全部</button>
+            <h3 class="card-title">{{ $t('dashboard.activeSprints') }}</h3>
+            <button class="card-link" @click="router.push({ name: 'projects' })">{{ $t('common.viewAll') }}</button>
           </div>
 
           <div v-if="activeSprints.length === 0" class="empty-state">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon">
               <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
             </svg>
-            <span class="empty-title">無進行中的 Sprint</span>
+            <span class="empty-title">{{ $t('dashboard.noActiveSprints') }}</span>
           </div>
 
           <div v-else class="sprint-list">
@@ -220,7 +222,7 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
               <div class="sprint-row">
                 <span class="sprint-name">{{ sprint.name }}</span>
                 <span v-if="sprintGateProgress[sprint.id]" class="sprint-gates">
-                  {{ sprintGateProgress[sprint.id].approved }} / {{ sprintGateProgress[sprint.id].total }} 關卡
+                  {{ sprintGateProgress[sprint.id].approved }} / {{ sprintGateProgress[sprint.id].total }} {{ $t('dashboard.gates') }}
                 </span>
               </div>
               <div v-if="sprint.goal" class="sprint-goal">{{ sprint.goal }}</div>
@@ -235,8 +237,8 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
         <!-- Pending Tasks -->
         <div class="section-card">
           <div class="card-header">
-            <h3 class="card-title">待處理任務</h3>
-            <button class="card-link" @click="router.push({ name: 'tasks' })">查看全部</button>
+            <h3 class="card-title">{{ $t('dashboard.pendingTasks') }}</h3>
+            <button class="card-link" @click="router.push({ name: 'tasks' })">{{ $t('common.viewAll') }}</button>
           </div>
 
           <div v-if="pendingTasks.length === 0" class="empty-state">
@@ -244,7 +246,7 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
               <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
               <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
             </svg>
-            <span class="empty-title">無待處理任務</span>
+            <span class="empty-title">{{ $t('dashboard.noPendingTasks') }}</span>
           </div>
 
           <div v-else class="task-list">
@@ -273,15 +275,15 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
         <!-- Recent Activity -->
         <div class="section-card">
           <div class="card-header">
-            <h3 class="card-title">最近活動</h3>
-            <button class="card-link" @click="router.push({ name: 'sessions' })">查看全部</button>
+            <h3 class="card-title">{{ $t('dashboard.recentActivity') }}</h3>
+            <button class="card-link" @click="router.push({ name: 'sessions' })">{{ $t('common.viewAll') }}</button>
           </div>
 
           <div v-if="sessionsStore.history.length === 0" class="empty-state">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon">
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
-            <span class="empty-title">尚無歷史紀錄</span>
+            <span class="empty-title">{{ $t('dashboard.noHistory') }}</span>
           </div>
 
           <div v-else class="activity-list">
@@ -314,15 +316,15 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
         <!-- Active Sessions -->
         <div class="section-card">
           <div class="card-header">
-            <h3 class="card-title">活躍工作階段</h3>
-            <button class="card-link" @click="router.push({ name: 'sessions' })">查看全部</button>
+            <h3 class="card-title">{{ $t('dashboard.activeSessions') }}</h3>
+            <button class="card-link" @click="router.push({ name: 'sessions' })">{{ $t('common.viewAll') }}</button>
           </div>
 
           <div v-if="sessionsStore.activeSessions.length === 0" class="empty-state">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon">
               <circle cx="12" cy="12" r="3"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
             </svg>
-            <span class="empty-title">尚無執行中的工作階段</span>
+            <span class="empty-title">{{ $t('dashboard.noActiveSessions') }}</span>
           </div>
 
           <div v-else class="session-list">
@@ -367,8 +369,8 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
         <!-- Gate Status -->
         <div class="section-card">
           <div class="card-header">
-            <h3 class="card-title">審核關卡</h3>
-            <button class="card-link" @click="router.push({ name: 'gates' })">查看全部</button>
+            <h3 class="card-title">{{ $t('dashboard.gateStatus') }}</h3>
+            <button class="card-link" @click="router.push({ name: 'gates' })">{{ $t('common.viewAll') }}</button>
           </div>
 
           <!-- Pending alert banner -->
@@ -376,9 +378,9 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            {{ gatesStore.pendingCount }} 個待處理關卡需要確認
+            {{ $t('dashboard.pendingGates', { n: gatesStore.pendingCount }) }}
           </div>
-          <div v-else class="gates-all-clear">所有關卡已通過</div>
+          <div v-else class="gates-all-clear">{{ $t('dashboard.allGatesPassed') }}</div>
 
           <!-- Gate items -->
           <div v-if="gatesStore.actionableGates.length > 0" class="gate-list">
@@ -394,7 +396,7 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
               <BaseTag
                 :color="gate.status === 'rejected' ? 'red' : gate.status === 'submitted' ? 'blue' : 'yellow'"
               >
-                {{ gate.status === 'pending' ? '待處理' : gate.status === 'submitted' ? '已提交' : '已退回' }}
+                {{ gate.status === 'pending' ? $t('gates.statusLabels.pending') : gate.status === 'submitted' ? $t('gates.statusLabels.submitted') : $t('gates.statusLabels.rejected') }}
               </BaseTag>
             </div>
           </div>
@@ -403,7 +405,7 @@ const taskStatusColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | '
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
-            <span class="empty-title">暫無待審關卡</span>
+            <span class="empty-title">{{ $t('dashboard.noGatesPending') }}</span>
           </div>
         </div>
 

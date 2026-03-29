@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useHarnessStore } from '../../stores/harness';
+
+const { t } = useI18n();
 
 const store = useHarnessStore();
 
@@ -133,13 +136,13 @@ function resultLabel(result: string): string {
     <div class="panel-left">
       <!-- Filter section -->
       <div class="filter-section">
-        <div class="filter-label">篩選條件</div>
+        <div class="filter-label">{{ $t('harness.triggerLogs.filterTitle') }}</div>
 
         <div class="filter-group">
-          <div class="filter-label">專案</div>
+          <div class="filter-label">{{ $t('harness.triggerLogs.filterProject') }}</div>
           <div class="select-wrap">
             <select v-model="filterProject" class="filter-select">
-              <option value="all">全部專案</option>
+              <option value="all">{{ $t('harness.triggerLogs.filterAllProjects') }}</option>
               <option v-for="p in projectOptions" :key="p" :value="p">{{ p }}</option>
             </select>
             <span class="select-arrow">
@@ -151,10 +154,10 @@ function resultLabel(result: string): string {
         </div>
 
         <div class="filter-group">
-          <div class="filter-label">Hook 名稱</div>
+          <div class="filter-label">{{ $t('harness.triggerLogs.filterHook') }}</div>
           <div class="select-wrap">
             <select v-model="filterHook" class="filter-select">
-              <option value="all">全部 Hook</option>
+              <option value="all">{{ $t('harness.triggerLogs.filterAllHooks') }}</option>
               <option v-for="name in hookNameOptions" :key="name" :value="name">{{ name }}</option>
             </select>
             <span class="select-arrow">
@@ -166,10 +169,10 @@ function resultLabel(result: string): string {
         </div>
 
         <div class="filter-group">
-          <div class="filter-label">執行結果</div>
+          <div class="filter-label">{{ $t('harness.triggerLogs.filterResult') }}</div>
           <div class="select-wrap">
             <select v-model="filterResult" class="filter-select">
-              <option value="all">全部結果</option>
+              <option value="all">{{ $t('harness.triggerLogs.filterAllResults') }}</option>
               <option value="blocked">Blocked</option>
               <option value="passed">Passed</option>
               <option value="warned">Warning</option>
@@ -183,13 +186,13 @@ function resultLabel(result: string): string {
         </div>
 
         <div class="filter-group">
-          <div class="filter-label">日期範圍</div>
+          <div class="filter-label">{{ $t('harness.triggerLogs.filterDateRange') }}</div>
           <div class="select-wrap">
             <select v-model="filterDateRange" class="filter-select">
-              <option value="today">今日</option>
-              <option value="7d">最近 7 天</option>
-              <option value="30d">最近 30 天</option>
-              <option value="all">全部</option>
+              <option value="today">{{ $t('harness.triggerLogs.filterToday') }}</option>
+              <option value="7d">{{ $t('harness.triggerLogs.filterLast7Days') }}</option>
+              <option value="30d">{{ $t('harness.triggerLogs.filterLast30Days') }}</option>
+              <option value="all">{{ $t('harness.triggerLogs.filterAll') }}</option>
             </select>
             <span class="select-arrow">
               <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
@@ -202,30 +205,30 @@ function resultLabel(result: string): string {
 
       <!-- Stats section -->
       <div class="stats-section">
-        <div class="filter-label stats-title">今日統計</div>
+        <div class="filter-label stats-title">{{ $t('harness.triggerLogs.todayStats') }}</div>
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-value">{{ store.hookStats.total }}</div>
-            <div class="stat-label">總觸發次數</div>
+            <div class="stat-label">{{ $t('harness.triggerLogs.statTotal') }}</div>
           </div>
           <div class="stat-card stat-blocked">
             <div class="stat-value stat-value-danger">{{ store.hookStats.blocked }}</div>
-            <div class="stat-label">已攔截</div>
+            <div class="stat-label">{{ $t('harness.triggerLogs.statBlocked') }}</div>
           </div>
           <div class="stat-card stat-passed">
             <div class="stat-value stat-value-success">{{ store.hookStats.passed }}</div>
-            <div class="stat-label">通過</div>
+            <div class="stat-label">{{ $t('harness.triggerLogs.statPassed') }}</div>
           </div>
           <div class="stat-card stat-warning">
             <div class="stat-value stat-value-warning">{{ store.hookStats.warned }}</div>
-            <div class="stat-label">警告</div>
+            <div class="stat-label">{{ $t('harness.triggerLogs.statWarning') }}</div>
           </div>
         </div>
       </div>
 
       <!-- 7-day Activity Chart -->
       <div class="chart-section">
-        <div class="filter-label chart-title">近 7 天活動</div>
+        <div class="filter-label chart-title">{{ $t('harness.triggerLogs.activity7Days') }}</div>
         <div class="chart-bars">
           <div
             v-for="day in last7DaysData"
@@ -246,7 +249,7 @@ function resultLabel(result: string): string {
 
       <!-- Top 5 Hooks Ranking -->
       <div class="ranking-section">
-        <div class="filter-label ranking-title">觸發排行</div>
+        <div class="filter-label ranking-title">{{ $t('harness.triggerLogs.triggerRanking') }}</div>
         <div v-if="top5Hooks.length > 0" class="ranking-list">
           <div
             v-for="(hook, idx) in top5Hooks"
@@ -264,14 +267,14 @@ function resultLabel(result: string): string {
             <span class="rank-count">{{ hook.count }}</span>
           </div>
         </div>
-        <div v-else class="ranking-empty">暫無排行數據</div>
+        <div v-else class="ranking-empty">{{ $t('harness.triggerLogs.noRanking') }}</div>
       </div>
 
       <!-- Left empty state -->
       <div v-if="!hasAnyLogs" class="left-empty">
         <div class="empty-icon">📋</div>
-        <div class="empty-title">尚無觸發紀錄</div>
-        <div class="empty-desc">Hook 被觸發時將記錄在此，啟用 Hook 後開始監控</div>
+        <div class="empty-title">{{ $t('harness.triggerLogs.noLogs') }}</div>
+        <div class="empty-desc">{{ $t('harness.triggerLogs.noLogsDesc') }}</div>
       </div>
     </div>
 
@@ -281,11 +284,11 @@ function resultLabel(result: string): string {
         <table class="records-table">
           <thead>
             <tr>
-              <th>時間</th>
-              <th>Hook 名稱</th>
-              <th>類型</th>
-              <th>觸發原因</th>
-              <th>結果</th>
+              <th>{{ $t('harness.triggerLogs.tableTime') }}</th>
+              <th>{{ $t('harness.triggerLogs.tableHookName') }}</th>
+              <th>{{ $t('harness.triggerLogs.tableType') }}</th>
+              <th>{{ $t('harness.triggerLogs.tableTriggerReason') }}</th>
+              <th>{{ $t('harness.triggerLogs.tableResult') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -315,8 +318,8 @@ function resultLabel(result: string): string {
       <!-- Right empty state -->
       <div v-else class="right-empty">
         <div class="empty-icon">📋</div>
-        <div class="empty-title">尚無觸發紀錄</div>
-        <div class="empty-desc">當 Hook 被觸發（Blocked / Passed / Warning）時，所有事件記錄將顯示在此</div>
+        <div class="empty-title">{{ $t('harness.triggerLogs.noLogsRight') }}</div>
+        <div class="empty-desc">{{ $t('harness.triggerLogs.noLogsRightDesc') }}</div>
       </div>
     </div>
   </div>

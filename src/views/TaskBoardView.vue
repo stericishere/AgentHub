@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useTasksStore } from '../stores/tasks';
 import { useProjectsStore } from '../stores/projects';
 import { useIpc } from '../composables/useIpc';
@@ -7,6 +8,7 @@ import type { SprintRecord } from '../stores/projects';
 import BaseTag from '../components/common/BaseTag.vue';
 import TaskDetailPanel from '../components/task/TaskDetailPanel.vue';
 
+const { t } = useI18n();
 const tasksStore = useTasksStore();
 const projectsStore = useProjectsStore();
 const { listSprints } = useIpc();
@@ -46,12 +48,12 @@ const priorityColor: Record<string, string> = {
   low: 'bg-text-muted',
 };
 
-const priorityLabel: Record<string, string> = {
-  critical: '緊急',
-  high: '高',
-  medium: '中',
-  low: '低',
-};
+const priorityLabel = computed<Record<string, string>>(() => ({
+  critical: t('taskboard.priorityLabels.critical'),
+  high: t('taskboard.priorityLabels.high'),
+  medium: t('taskboard.priorityLabels.medium'),
+  low: t('taskboard.priorityLabels.low'),
+}));
 
 const tagColor: Record<string, 'purple' | 'blue' | 'yellow' | 'green' | 'red'> = {
   critical: 'red',
@@ -79,9 +81,9 @@ const visibleColumns = computed(() =>
   <div class="task-board-view">
     <!-- Page Header -->
     <div class="board-header">
-      <h2 class="board-title">任務看板</h2>
+      <h2 class="board-title">{{ $t('taskboard.title') }}</h2>
       <span class="progress-badge">
-        完成 {{ tasksStore.doneCount }}/{{ tasksStore.totalCount }}
+        {{ $t('taskboard.completed', { done: tasksStore.doneCount, total: tasksStore.totalCount }) }}
       </span>
       <div class="header-spacer"></div>
       <select
@@ -89,7 +91,7 @@ const visibleColumns = computed(() =>
         class="filter-select"
         @change="onProjectChange"
       >
-        <option value="">全部專案</option>
+        <option value="">{{ $t('taskboard.allProjects') }}</option>
         <option
           v-for="project in projectsStore.projects"
           :key="project.id"
@@ -104,7 +106,7 @@ const visibleColumns = computed(() =>
         :disabled="!filterProjectId"
         @change="onSprintChange"
       >
-        <option value="">全部 Sprint</option>
+        <option value="">{{ $t('taskboard.allSprints') }}</option>
         <option
           v-for="sprint in sprints"
           :key="sprint.id"
@@ -121,7 +123,7 @@ const visibleColumns = computed(() =>
         <div v-for="col in visibleColumns" :key="col.key" class="kanban-col">
           <div class="col-header">
             <div class="col-dot" :class="`col-dot--${col.key}`"></div>
-            <span class="col-title">{{ col.key === 'created' ? '待做' : col.label }}</span>
+            <span class="col-title">{{ $t(`taskboard.columnLabels.${col.key}`) }}</span>
             <span class="col-badge" :class="`col-badge--${col.key}`">—</span>
           </div>
           <div class="col-body">
@@ -143,7 +145,7 @@ const visibleColumns = computed(() =>
           <!-- Column header -->
           <div class="col-header">
             <div class="col-dot" :class="`col-dot--${col.key}`"></div>
-            <span class="col-title">{{ col.key === 'created' ? '待做' : col.label }}</span>
+            <span class="col-title">{{ $t(`taskboard.columnLabels.${col.key}`) }}</span>
             <span class="col-badge" :class="`col-badge--${col.key}`">
               {{ tasksStore.tasksByStatus[col.key]?.length ?? 0 }}
             </span>
@@ -157,7 +159,7 @@ const visibleColumns = computed(() =>
               class="empty-col"
             >
               <div class="empty-col-icon">○</div>
-              <div class="empty-col-text">無任務</div>
+              <div class="empty-col-text">{{ $t('taskboard.noTasks') }}</div>
             </div>
 
             <!-- Task cards -->
@@ -184,6 +186,7 @@ const visibleColumns = computed(() =>
                 <BaseTag :color="tagColor[task.priority]" class="priority-tag-override">
                   {{ priorityLabel[task.priority] }}
                 </BaseTag>
+
                 <span v-if="task.assignedTo" class="agent-tag">
                   {{ task.assignedTo }}
                 </span>

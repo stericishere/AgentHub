@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useProjectsStore } from '../stores/projects';
 import ProjectCard from '../components/project/ProjectCard.vue';
 import ProjectCreateModal from '../components/project/ProjectCreateModal.vue';
 import BaseButton from '../components/common/BaseButton.vue';
 
+const { t } = useI18n();
 const projectsStore = useProjectsStore();
 const showCreateModal = ref(false);
 
@@ -24,12 +26,12 @@ async function handleCreate(params: { name: string; description: string; templat
   <div class="projects-view">
     <!-- Header -->
     <div class="projects-header">
-      <h2 class="projects-title">專案</h2>
+      <h2 class="projects-title">{{ $t('projects.title') }}</h2>
       <BaseButton variant="primary" size="sm" @click="showCreateModal = true">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        新增專案
+        {{ $t('projects.newProject') }}
       </BaseButton>
     </div>
 
@@ -48,8 +50,8 @@ async function handleCreate(params: { name: string; description: string; templat
           <circle cx="12" cy="12" r="10"/>
           <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
         </svg>
-        <div class="new-card-text">建立新專案</div>
-        <div class="new-card-hint">選擇模板開始</div>
+        <div class="new-card-text">{{ $t('projects.createNew') }}</div>
+        <div class="new-card-hint">{{ $t('projects.selectTemplate') }}</div>
       </div>
     </div>
 
@@ -77,12 +79,16 @@ async function handleCreate(params: { name: string; description: string; templat
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
+  height: 52px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .projects-title {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--color-text-primary);
+  flex: 1;
 }
 
 .projects-grid {

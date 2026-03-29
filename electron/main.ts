@@ -14,6 +14,7 @@ import { logger } from './utils/logger';
 import { IpcChannels } from './types';
 import { trayService } from './services/tray-service';
 import { loadEnv } from './utils/env';
+import { initI18n, t, setLocale } from './utils/i18n';
 
 // Load .env before anything else
 loadEnv();
@@ -94,15 +95,15 @@ function createWindow(): void {
     const menu = new Menu();
 
     if (params.isEditable) {
-      menu.append(new MenuItem({ label: '剪下', role: 'cut' }));
-      menu.append(new MenuItem({ label: '複製', role: 'copy' }));
-      menu.append(new MenuItem({ label: '貼上', role: 'paste' }));
+      menu.append(new MenuItem({ label: t('electron.menu.cut'), role: 'cut' }));
+      menu.append(new MenuItem({ label: t('electron.menu.copy'), role: 'copy' }));
+      menu.append(new MenuItem({ label: t('electron.menu.paste'), role: 'paste' }));
     } else if (params.selectionText) {
-      menu.append(new MenuItem({ label: '複製', role: 'copy' }));
+      menu.append(new MenuItem({ label: t('electron.menu.copy'), role: 'copy' }));
     }
 
     menu.append(new MenuItem({ type: 'separator' }));
-    menu.append(new MenuItem({ label: '全選', role: 'selectAll' }));
+    menu.append(new MenuItem({ label: t('electron.menu.selectAll'), role: 'selectAll' }));
 
     if (menu.items.length > 0) {
       menu.popup();
@@ -152,45 +153,55 @@ function setupEventForwarding(): void {
 app.whenReady().then(async () => {
   logger.info('Maestro starting...');
 
+  // Initialize database (async for sql.js WASM loading)
+  await database.initialize();
+  logger.info('Database initialized');
+
+  // Load language setting from user_preferences and initialize i18n
+  initI18n();
+  try {
+    const langResult = database.prepare('SELECT value FROM user_preferences WHERE key = ?', ['language']);
+    if (langResult.length > 0) {
+      const lang = (langResult[0] as { value: string }).value;
+      if (lang === 'zh-TW' || lang === 'en') setLocale(lang);
+    }
+  } catch { /* ignore */ }
+
   // Application menu with Edit role (enables Ctrl+C/V/X/A keyboard shortcuts)
   const appMenu = Menu.buildFromTemplate([
     {
       label: 'Maestro',
       submenu: [
-        { label: '關於 Maestro', role: 'about' },
+        { label: t('electron.menu.about'), role: 'about' },
         { type: 'separator' },
-        { label: '結束', role: 'quit' },
+        { label: t('electron.menu.quit'), role: 'quit' },
       ],
     },
     {
-      label: '編輯',
+      label: t('electron.menu.edit'),
       submenu: [
-        { label: '復原', role: 'undo', accelerator: 'CmdOrCtrl+Z' },
-        { label: '重做', role: 'redo', accelerator: 'CmdOrCtrl+Shift+Z' },
+        { label: t('electron.menu.undo'), role: 'undo', accelerator: 'CmdOrCtrl+Z' },
+        { label: t('electron.menu.redo'), role: 'redo', accelerator: 'CmdOrCtrl+Shift+Z' },
         { type: 'separator' },
-        { label: '剪下', role: 'cut', accelerator: 'CmdOrCtrl+X' },
-        { label: '複製', role: 'copy', accelerator: 'CmdOrCtrl+C' },
-        { label: '貼上', role: 'paste', accelerator: 'CmdOrCtrl+V' },
-        { label: '全選', role: 'selectAll', accelerator: 'CmdOrCtrl+A' },
+        { label: t('electron.menu.cut'), role: 'cut', accelerator: 'CmdOrCtrl+X' },
+        { label: t('electron.menu.copy'), role: 'copy', accelerator: 'CmdOrCtrl+C' },
+        { label: t('electron.menu.paste'), role: 'paste', accelerator: 'CmdOrCtrl+V' },
+        { label: t('electron.menu.selectAll'), role: 'selectAll', accelerator: 'CmdOrCtrl+A' },
       ],
     },
     {
-      label: '檢視',
+      label: t('electron.menu.view'),
       submenu: [
-        { label: '重新載入', role: 'reload' },
-        { label: '開發者工具', role: 'toggleDevTools' },
+        { label: t('electron.menu.reload'), role: 'reload' },
+        { label: t('electron.menu.devtools'), role: 'toggleDevTools' },
         { type: 'separator' },
-        { label: '放大', role: 'zoomIn' },
-        { label: '縮小', role: 'zoomOut' },
-        { label: '重設縮放', role: 'resetZoom' },
+        { label: t('electron.menu.zoomIn'), role: 'zoomIn' },
+        { label: t('electron.menu.zoomOut'), role: 'zoomOut' },
+        { label: t('electron.menu.resetZoom'), role: 'resetZoom' },
       ],
     },
   ]);
   Menu.setApplicationMenu(appMenu);
-
-  // Initialize database (async for sql.js WASM loading)
-  await database.initialize();
-  logger.info('Database initialized');
 
   // Bootstrap: ensure AgentHub's own .claude/ has hooks and skills
   try {

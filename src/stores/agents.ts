@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useIpc } from '../composables/useIpc';
+import { i18n } from '../plugins/i18n';
 
 export interface AgentDefinition {
   id: string;
@@ -140,6 +141,51 @@ const AGENT_DISPLAY_NAMES: Record<string, string> = {
   'joker': '百搭牌',
 };
 
+const AGENT_DISPLAY_NAMES_EN: Record<string, string> = {
+  'tech-lead': 'Tech Lead',
+  'backend-architect': 'Backend Architect',
+  'frontend-developer': 'Frontend Developer',
+  'mobile-app-builder': 'Mobile App Builder',
+  'ai-engineer': 'AI Engineer',
+  'rapid-prototyper': 'Rapid Prototyper',
+  'devops-automator': 'DevOps Automator',
+  'infrastructure-maintainer': 'Infrastructure Maintainer',
+  'design-director': 'Design Director',
+  'ui-designer': 'UI Designer',
+  'ux-researcher': 'UX Researcher',
+  'visual-storyteller': 'Visual Storyteller',
+  'brand-guardian': 'Brand Guardian',
+  'whimsy-injector': 'Whimsy Injector',
+  'product-manager': 'Product Manager',
+  'feedback-synthesizer': 'Feedback Synthesizer',
+  'sprint-prioritizer': 'Sprint Prioritizer',
+  'trend-researcher': 'Trend Researcher',
+  'marketing-lead': 'Marketing Lead',
+  'content-creator': 'Content Creator',
+  'app-store-optimizer': 'App Store Optimizer',
+  'tiktok-strategist': 'TikTok Strategist',
+  'qa-lead': 'QA Lead',
+  'test-writer-fixer': 'Test Engineer',
+  'api-tester': 'API Tester',
+  'performance-benchmarker': 'Performance Benchmarker',
+  'test-results-analyzer': 'Test Results Analyzer',
+  'tool-evaluator': 'Tool Evaluator',
+  'workflow-optimizer': 'Workflow Optimizer',
+  'project-lead': 'Project Lead',
+  'project-shipper': 'Project Shipper',
+  'studio-producer': 'Studio Producer',
+  'experiment-tracker': 'Experiment Tracker',
+  'operations-lead': 'Operations Lead',
+  'finance-tracker': 'Finance Tracker',
+  'analytics-reporter': 'Analytics Reporter',
+  'legal-compliance-checker': 'Legal & Compliance',
+  'support-responder': 'Support Responder',
+  'context-manager': 'Context Manager',
+  'studio-coach': 'Studio Coach',
+  'company-manager': 'Company Knowledge Manager',
+  'joker': 'Joker',
+};
+
 /** Agent ID → 繁體中文簡介（取代 YAML 中的英文 description） */
 const AGENT_BRIEF: Record<string, string> = {
   // 工程部
@@ -193,6 +239,51 @@ const AGENT_BRIEF: Record<string, string> = {
   'company-manager': '跨子專案知識收集與提煉，彙整踩坑紀錄、與老闆討論通用問題，更新公司知識庫規範。',
   // 特殊
   'joker': '團隊氣氛調節者，用幽默和創意為高壓工作帶來歡笑與靈感。',
+};
+
+const AGENT_BRIEF_EN: Record<string, string> = {
+  'tech-lead': 'Head of Engineering. Technical decisions, architecture design, code review and task assignment. Reports directly to the boss.',
+  'backend-architect': 'Designs APIs, databases and server architecture. Ensures backend services are stable, secure and scalable.',
+  'frontend-developer': 'Implements user interfaces, Vue/React components, state management and frontend performance optimization.',
+  'mobile-app-builder': 'Develops iOS/Android native or cross-platform mobile apps, handling push notifications, gestures and device adaptation.',
+  'ai-engineer': 'Integrates AI/ML features including language model APIs, recommendation systems and intelligent automation.',
+  'rapid-prototyper': 'Quickly builds MVPs or proof-of-concept prototypes, turning ideas into runnable demos in minimal time.',
+  'devops-automator': 'Sets up CI/CD pipelines, cloud infrastructure, monitoring alerts and automated deployments.',
+  'infrastructure-maintainer': 'Monitors system health, optimizes performance, manages scaling strategies and disaster prevention.',
+  'design-director': 'Head of Design. Oversees design direction, brand consistency and user experience strategy.',
+  'ui-designer': 'Designs interface components, builds design systems, ensures visual aesthetics and usability.',
+  'ux-researcher': 'Conducts user research, behavior analysis and journey mapping to validate design decisions.',
+  'visual-storyteller': 'Transforms data and concepts into compelling visual narratives, infographics and presentations.',
+  'brand-guardian': 'Establishes brand guidelines, maintains visual consistency, manages brand assets and identity evolution.',
+  'whimsy-injector': 'Automatically injects delightful elements after UI completion, adding surprise and joy to user experiences.',
+  'product-manager': 'Head of Product. Manages requirements, Sprint planning and cross-department coordination.',
+  'feedback-synthesizer': 'Analyzes multi-channel user feedback, identifies patterns and transforms into actionable product insights.',
+  'sprint-prioritizer': 'Plans 6-day development cycles, prioritizes features and makes trade-off decisions.',
+  'trend-researcher': 'Researches market trends, TikTok topics and App Store patterns to discover product opportunities.',
+  'marketing-lead': 'Head of Marketing. Oversees marketing strategy, brand promotion and community management.',
+  'content-creator': 'Cross-platform content production from blog posts to social media, maintaining brand voice and maximizing impact.',
+  'app-store-optimizer': 'Optimizes App Store listings, keyword research and conversion rates to maximize organic search visibility.',
+  'tiktok-strategist': 'Develops TikTok marketing strategies, viral content ideas and algorithm optimization.',
+  'qa-lead': 'Head of QA. Oversees testing strategy, quality standards and bug management processes.',
+  'test-writer-fixer': 'Writes unit/integration tests, analyzes failures and fixes them, ensuring test coverage meets targets.',
+  'api-tester': 'Automated testing on API endpoints, validating response formats, error handling and edge cases.',
+  'performance-benchmarker': 'Runs performance benchmarks and load tests, identifies bottlenecks and proposes optimizations.',
+  'test-results-analyzer': 'Analyzes test execution results, tracks coverage trends and quality metrics.',
+  'tool-evaluator': 'Evaluates development tools and third-party packages, providing adoption recommendations and risk analysis.',
+  'workflow-optimizer': 'Optimizes development processes and automated workflows, reducing manual operations and wait times.',
+  'project-lead': 'Head of Project Management. Cross-department coordination, resource allocation and progress tracking.',
+  'project-shipper': 'Handles the final mile before launch, coordinating release processes and go-to-market strategies.',
+  'studio-producer': 'Cross-team resource scheduling, workflow optimization and dependency management within Sprint cycles.',
+  'experiment-tracker': 'Tracks A/B tests and feature experiments, analyzes results and proposes iteration improvements.',
+  'operations-lead': 'Head of Operations. Oversees finance, legal, support and overall operational efficiency.',
+  'finance-tracker': 'Manages budgets, cost optimization, revenue forecasting and financial performance analysis.',
+  'analytics-reporter': 'Analyzes operational data, generates insight reports and provides data-driven decision recommendations.',
+  'legal-compliance-checker': 'Reviews terms of service, privacy policies, ensures regulatory compliance and user trust.',
+  'support-responder': 'Handles customer support inquiries, builds support documentation and analyzes common issue patterns.',
+  'context-manager': 'Manages cross-session context memory, ensuring information is correctly passed between Agents.',
+  'studio-coach': 'Team performance coach, coordinating Agent collaboration and morale during complex project launches.',
+  'company-manager': 'Cross-project knowledge collection and refinement. Compiles pitfall records, discusses common issues with the boss, updates company knowledge base.',
+  'joker': 'Team morale booster, bringing humor and creativity to high-pressure work through laughter and inspiration.',
 };
 
 export const useAgentsStore = defineStore('agents', () => {
@@ -283,10 +374,16 @@ export const useAgentsStore = defineStore('agents', () => {
     filterSearch.value = search;
   }
 
-  /** 取得 Agent 的中文顯示名稱，找不到時 fallback 為原始 name/id */
+  /** 取得當前 locale */
+  function currentLocale(): string {
+    return (i18n.global.locale as unknown as { value: string }).value;
+  }
+
+  /** 取得 Agent 的顯示名稱（依語系切換） */
   function displayName(agentOrId: string | AgentDefinition): string {
     const id = typeof agentOrId === 'string' ? agentOrId : agentOrId.id;
-    return AGENT_DISPLAY_NAMES[id] || id;
+    const names = currentLocale() === 'en' ? AGENT_DISPLAY_NAMES_EN : AGENT_DISPLAY_NAMES;
+    return names[id] || AGENT_DISPLAY_NAMES[id] || id;
   }
 
   /** 取得 Agent 的專屬圖示 */
@@ -295,9 +392,11 @@ export const useAgentsStore = defineStore('agents', () => {
     return AGENT_ICONS[id] || '🤖';
   }
 
-  /** 取得 Agent 的中文簡介，找不到時 fallback 為原始 description */
+  /** 取得 Agent 的簡介（依語系切換） */
   function agentBrief(agentOrId: string | AgentDefinition): string {
     const id = typeof agentOrId === 'string' ? agentOrId : agentOrId.id;
+    const briefs = currentLocale() === 'en' ? AGENT_BRIEF_EN : AGENT_BRIEF;
+    if (briefs[id]) return briefs[id];
     if (AGENT_BRIEF[id]) return AGENT_BRIEF[id];
     const agent = typeof agentOrId === 'string' ? agents.value.find((a) => a.id === id) : agentOrId;
     return agent?.description || '';

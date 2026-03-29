@@ -1,14 +1,18 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
 defineProps<{
   show: boolean;
   title?: string;
-  /** 寬度 class，預設 w-[500px] */
+  /** Width class, defaults to w-[500px] */
   width?: string;
 }>();
 
 const emit = defineEmits<{
   close: [];
 }>();
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -27,6 +31,7 @@ const emit = defineEmits<{
             <h3 class="text-sm font-semibold">{{ title }}</h3>
             <button
               class="cursor-pointer border-none bg-transparent text-text-muted hover:text-text-primary"
+              :aria-label="t('common.close')"
               @click="emit('close')"
             >
               ✕

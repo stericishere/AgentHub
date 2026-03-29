@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useGatesStore, type GateRecord, type GateType } from '../../stores/gates';
 import GateChecklistPanel from './GateChecklistPanel.vue';
 import BaseButton from '../common/BaseButton.vue';
 
+const { t } = useI18n();
 const gatesStore = useGatesStore();
 
 const expanded = ref(false);
@@ -23,16 +25,6 @@ const currentChecklist = computed(() => {
   if (!currentGate.value) return null;
   return gatesStore.checklists.find((c) => c.gateType === currentGate.value!.gateType) || null;
 });
-
-const gateLabels: Record<GateType, string> = {
-  G0: '需求確認',
-  G1: '圖稿審核',
-  G2: '程式碼審查',
-  G3: '測試驗收',
-  G4: '文件審查',
-  G5: '部署就緒',
-  G6: '正式發佈',
-};
 
 function cycleGate(dir: 1 | -1) {
   const len = submittedGates.value.length;
@@ -98,10 +90,10 @@ if (window.maestro?.on?.gateStatusChanged) {
     >
       <div class="review-banner__bar-left">
         <span class="review-banner__count-label">
-          {{ submittedGates.length }} 個關卡待審核
+          {{ $t('components.gateReviewBanner.pendingReview', { n: submittedGates.length }) }}
         </span>
         <span v-if="currentGate" class="review-banner__gate-info">
-          — {{ currentGate.gateType }} {{ gateLabels[currentGate.gateType] }}
+          — {{ currentGate.gateType }} {{ $t(`gates.typeLabels.${currentGate.gateType}`) }}
           <template v-if="currentGate.projectName">
             ({{ currentGate.projectName }}<template v-if="currentGate.sprintName"> / {{ currentGate.sprintName }}</template>)
           </template>
@@ -117,7 +109,7 @@ if (window.maestro?.on?.gateStatusChanged) {
             &gt;
           </BaseButton>
         </template>
-        <span class="review-banner__toggle-hint">{{ expanded ? '收起' : '展開' }}</span>
+        <span class="review-banner__toggle-hint">{{ expanded ? $t('gates.collapse') : $t('gates.expand') }}</span>
       </div>
     </div>
 

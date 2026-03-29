@@ -98,6 +98,14 @@
 | Skill: `/knowledge-feedback` | 掃描子專案 postmortem → 分類 → 提出公司規範修改建議（僅部署到 AgentHub） |
 | SkillGenerator 擴充 | `AGENTHUB_ONLY_SKILLS` 清單，排除公司專用 Skill 部署到子專案 |
 
+### Sprint 5 新增（已實作）
+
+| 工具 | 檔案 | 職責 |
+|------|------|------|
+| i18n（Main Process） | `utils/i18n.ts` | Electron main process 專用輕量 i18n helper；`initI18n()` 以 readFileSync 載入 locale JSON，`t()` 支援 dot-notation key 及 `{n}` 參數替換；語言從 DB `user_preferences.language` 讀取，預設 `zh-TW` |
+
+> 注意：`initI18n()` 須在 `database.initialize()` 之後、`Menu.buildFromTemplate()` 之前呼叫。Main process 不使用 vue-i18n，僅使用本 helper。
+
 ## 已移除服務
 
 | 服務 | 原因 |
