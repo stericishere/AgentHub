@@ -226,11 +226,11 @@ describe('TaskManager', () => {
     });
 
     it('inserts dependency when both tasks exist', () => {
-      // getById('proj-1', 'task-1') → composite SELECT returns row, getDependencies → empty
-      // getById('proj-1', 'task-2') → composite SELECT returns row, getDependencies → empty
-      mockDb.prepare.mockImplementation((sql: string, params?: unknown[]) => {
-        if (sql.includes('FROM tasks WHERE project_id') && params?.[1] === 'task-1') return [makeTaskRow({ id: 'task-1' })];
-        if (sql.includes('FROM tasks WHERE project_id') && params?.[1] === 'task-2') return [makeTaskRow({ id: 'task-2' })];
+      // getById('proj-1', 'task-1') → composite SELECT returns row
+      // getById('proj-1', 'task-2') → composite SELECT returns row
+      mockDb.prepare.mockImplementation((_sql: string, params?: unknown[]) => {
+        if (params?.[1] === 'task-1') return [makeTaskRow({ id: 'task-1' })];
+        if (params?.[1] === 'task-2') return [makeTaskRow({ id: 'task-2' })];
         return [];
       });
 
