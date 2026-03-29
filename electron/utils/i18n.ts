@@ -17,7 +17,7 @@ let messages: Record<Locale, Record<string, unknown>> = {
 export function initI18n(): void {
   try {
     // Load from i18n-shared package
-    const basePath = join(__dirname, '../../../packages/i18n-shared/src/locales');
+    const basePath = join(__dirname, '../../packages/i18n-shared/src/locales');
     const zhTW = JSON.parse(readFileSync(join(basePath, 'zh-TW.json'), 'utf-8'));
     const en = JSON.parse(readFileSync(join(basePath, 'en.json'), 'utf-8'));
 
