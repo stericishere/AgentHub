@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import StatusDot from '../common/StatusDot.vue';
 import SessionTerminal from './SessionTerminal.vue';
@@ -60,11 +60,7 @@ const isRunning = computed(() => {
   return !['completed', 'failed', 'stopped'].includes(props.session.status);
 });
 
-const terminalComp = ref<InstanceType<typeof SessionTerminal> | null>(null);
 
-function refreshTerminal() {
-  terminalComp.value?.reinit();
-}
 </script>
 
 <template>
@@ -129,15 +125,7 @@ function refreshTerminal() {
 
     <!-- Terminal mini preview -->
     <div class="session-card__terminal">
-      <SessionTerminal ref="terminalComp" :pty-id="session.ptyId" :active="selected" />
-      <!-- Refresh button — reinitializes terminal to fix rendering glitch -->
-      <button
-        class="session-card__refresh-btn"
-        :title="$t('sessions.card.refresh', '刷新')"
-        @click.stop="refreshTerminal"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-      </button>
+      <SessionTerminal :pty-id="session.ptyId" :active="selected" />
     </div>
 
     <!-- Card footer: status + duration -->
@@ -349,36 +337,8 @@ function refreshTerminal() {
   color: var(--color-text-muted);
 }
 
-.session-card__refresh-btn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: rgba(15, 17, 23, 0.7);
-  color: var(--color-text-muted);
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 150ms ease, background-color 150ms ease, color 150ms ease;
-}
-
 .session-card__terminal {
-  position: relative;
   height: 360px;
   background-color: #0a0b0f;
-}
-
-.session-card__terminal:hover .session-card__refresh-btn {
-  opacity: 1;
-}
-
-.session-card__refresh-btn:hover {
-  background: rgba(108, 92, 231, 0.3);
-  color: var(--color-accent-light);
 }
 </style>

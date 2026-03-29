@@ -136,9 +136,27 @@ onActivated(() => {
 });
 
 onMounted(() => {
-  // Delay terminal init so parent flex/grid layout has stable dimensions.
-  // Without this, xterm measures wrong container size → garbled text ("破圖").
-  setTimeout(() => initTerminal(), 150);
+  // Wait for container to have stable dimensions before initializing xterm.
+  // CSS grid/flex may not have resolved column widths yet on first frame.
+  // We observe the container and only init once its width stops changing.
+  if (!terminalRef.value) return;
+  let lastWidth = 0;
+  let stableCount = 0;
+  const checkStable = () => {
+    const w = terminalRef.value?.clientWidth ?? 0;
+    if (w > 0 && w === lastWidth) {
+      stableCount++;
+      if (stableCount >= 2) {
+        initTerminal();
+        return;
+      }
+    } else {
+      stableCount = 0;
+    }
+    lastWidth = w;
+    requestAnimationFrame(checkStable);
+  };
+  requestAnimationFrame(checkStable);
 });
 
 onBeforeUnmount(() => {
