@@ -1,5 +1,5 @@
 import { createI18n } from 'vue-i18n';
-import { sharedMessages, getStoredLocale, detectLocale } from '../../../packages/i18n-shared/src';
+import { sharedMessages, getStoredLocale, detectLocale } from '../../packages/i18n-shared/src';
 import zhTW from '../locales/zh-TW.json';
 import en from '../locales/en.json';
 

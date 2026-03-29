@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useSettingsStore } from '../stores/settings';
-import { storeLocale, type SupportedLocale } from '../../../packages/i18n-shared/src';
+import { storeLocale, type SupportedLocale } from '../../packages/i18n-shared/src';
 import BaseButton from '../components/common/BaseButton.vue';
 
 const { t, locale } = useI18n();

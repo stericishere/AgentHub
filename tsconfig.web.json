@@ -22,7 +22,7 @@
     "src/**/*.d.ts",
     "src/**/*.vue",
     "src/**/*.json",
-    "../packages/i18n-shared/src/**/*.ts",
-    "../packages/i18n-shared/src/**/*.json"
+    "packages/i18n-shared/src/**/*.ts",
+    "packages/i18n-shared/src/**/*.json"
   ]
 }
