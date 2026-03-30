@@ -321,6 +321,10 @@ npm install
 npm run dev
 ```
 
+> **Troubleshooting `npm install` failure:**
+> If you see `Could not find any Visual Studio installation` or `node-gyp failed to rebuild node-pty`, it means C++ Build Tools are not installed. See [Platform Setup](#platform-setup) above.
+> As a quick workaround, you can run `npm install --ignore-scripts` to skip native module compilation, then `npm run dev` — the terminal feature may not work, but the rest of the app will start.
+
 ### Available Commands
 
 ```bash
