@@ -48,7 +48,7 @@ allowed-tools: Read, Edit, Glob
 
 3. **更新狀態欄位**：將 `| 狀態 | xxx |` 修改為 `| 狀態 | {new-status} |`
 
-4. **追加事件紀錄**：在 `## 事件紀錄` 區塊底部 append：
+4. **事件紀錄（必要，不可跳過）**：在 `## 事件紀錄` 區塊底部 append：
 ```markdown
 ### {ISO timestamp} — 狀態變更 → {new-status}
 {備註}
