@@ -78,6 +78,8 @@ allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 | 依賴 | {依賴任務 ID，無則填 —} |
 | 預估 | {預估工時，無則填 —} |
 | 建立時間 | {ISO timestamp} |
+| 開始時間 | — |
+| 完工時間 | — |
 
 ---
 

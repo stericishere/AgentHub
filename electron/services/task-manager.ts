@@ -507,6 +507,8 @@ class TaskManager {
       tags: row.tags || null,
       estimatedHours: row.estimated_hours || null,
       actualHours: row.actual_hours || null,
+      startedAt: row.started_at || null,
+      completedAt: row.completed_at || null,
       dependsOn: deps,
       createdAt: row.created_at,
       updatedAt: row.updated_at,

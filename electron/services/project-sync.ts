@@ -328,11 +328,23 @@ class ProjectSyncService {
     const resolvedSprintId = resolveSprintId(projectId, sprintRef);
 
     const now = new Date().toISOString();
+
+    // Auto-calculate actual_hours from started_at / completed_at
+    let actualHours: number | null = null;
+    if (task.startedAt && task.completedAt) {
+      const start = new Date(task.startedAt).getTime();
+      const end = new Date(task.completedAt).getTime();
+      if (!isNaN(start) && !isNaN(end) && end > start) {
+        actualHours = Math.round(((end - start) / 3_600_000) * 100) / 100;
+      }
+    }
+
     database.run(
       `INSERT OR REPLACE INTO tasks
          (id, project_id, sprint_id, title, description, status, assigned_to,
-          priority, tags, estimated_hours, updated_at, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+          priority, tags, estimated_hours, actual_hours, started_at, completed_at,
+          updated_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                ?,
                COALESCE((SELECT created_at FROM tasks WHERE project_id = ? AND id = ?), ?))`,
       [
@@ -346,6 +358,9 @@ class ProjectSyncService {
         task.priority,
         task.tags,
         task.estimatedHours,
+        actualHours,
+        task.startedAt || null,
+        task.completedAt || null,
         now,
         // created_at subquery params (composite key lookup)
         projectId,

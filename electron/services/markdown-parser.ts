@@ -17,6 +17,8 @@ export interface ParsedTask {
   tags: string | null;
   estimatedHours: number | null;
   createdAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
   description: string;
   dependsOn: string | null;
 }
@@ -302,6 +304,8 @@ export function parseTaskFile(content: string): ParsedTask | null {
       tags: cellOrNull(meta['標籤']),
       estimatedHours: estimatedHours !== null && !isNaN(estimatedHours) ? estimatedHours : null,
       createdAt: cellOrNull(meta['建立時間']),
+      startedAt: cellOrNull(meta['開始時間']),
+      completedAt: cellOrNull(meta['完工時間']),
       description: extractTaskBody(content),
       dependsOn: cellOrNull(meta['依賴']),
     };

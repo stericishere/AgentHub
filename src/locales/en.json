@@ -354,6 +354,8 @@
       "sprint": "Sprint",
       "estimatedHours": "Est. Hours",
       "actualHours": "Actual Hours",
+      "startedAt": "Started At",
+      "completedAt": "Completed At",
       "createdAt": "Created At",
       "dependencies": "Dependencies",
       "tags": "Tags",
