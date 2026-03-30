@@ -260,25 +260,6 @@ export interface MaestroApi {
     checkout: (cwd: string, branchName: string) => Promise<{ success: boolean }>;
     deleteBranch: (cwd: string, branchName: string, force?: boolean) => Promise<{ success: boolean }>;
   };
-  github: {
-    createPR: (params: {
-      owner: string;
-      repo: string;
-      title: string;
-      body?: string;
-      head: string;
-      base: string;
-    }) => Promise<unknown>;
-    listPRs: (owner: string, repo: string, state?: string) => Promise<unknown[]>;
-    createIssue: (params: {
-      owner: string;
-      repo: string;
-      title: string;
-      body?: string;
-      labels?: string[];
-    }) => Promise<unknown>;
-    getRepos: (page?: number, perPage?: number) => Promise<unknown[]>;
-  };
   pty: {
     input: (ptyId: string, data: string) => void;
     resize: (ptyId: string, cols: number, rows: number) => void;
@@ -435,12 +416,6 @@ const api: MaestroApi = {
     checkout: (cwd, branchName) => ipcRenderer.invoke('git:checkout', cwd, branchName),
     deleteBranch: (cwd, branchName, force?) =>
       ipcRenderer.invoke('git:delete-branch', cwd, branchName, force),
-  },
-  github: {
-    createPR: (params) => ipcRenderer.invoke('github:create-pr', params),
-    listPRs: (owner, repo, state) => ipcRenderer.invoke('github:list-prs', owner, repo, state),
-    createIssue: (params) => ipcRenderer.invoke('github:create-issue', params),
-    getRepos: (page, perPage) => ipcRenderer.invoke('github:get-repos', page, perPage),
   },
   pty: {
     input: (ptyId, data) => ipcRenderer.send('pty:input', { ptyId, data }),
