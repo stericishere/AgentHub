@@ -26,6 +26,7 @@ interface MaestroApi {
       activeSessions: number;
     }>;
     selectFolder: () => Promise<string | null>;
+    clearDatabase: () => Promise<{ deletedCounts: Record<string, number> }>;
   };
   sessions: {
     spawn: (params: {
@@ -35,6 +36,7 @@ interface MaestroApi {
       maxTurns?: number;
       projectId?: string | null;
       taskId?: string | null;
+      interactive?: boolean;
       parentSessionId?: string;
       resumeSessionId?: string;
       resumeConversationId?: string;

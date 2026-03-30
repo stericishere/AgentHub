@@ -21,8 +21,11 @@ export interface MaestroApi {
       maxTurns?: number;
       projectId?: string | null;
       taskId?: string | null;
+      interactive?: boolean;
       parentSessionId?: string;
       resumeSessionId?: string;
+      resumeConversationId?: string;
+      projectPath?: string;
     }) => Promise<{ sessionId: string; ptyId: string }>;
     stop: (sessionId: string, force?: boolean) => Promise<{ success: boolean }>;
     list: (limit?: number) => Promise<unknown[]>;
@@ -88,9 +91,10 @@ export interface MaestroApi {
     getStats: (projectId: string) => Promise<{
       tasksDone: number;
       tasksInProgress: number;
+      totalTasks: number;
       totalTokens: number;
       totalCostUsd: number;
-      activeSprint: { name: string; progressPct: number } | null;
+      activeSprint: { name: string; progressPct: number; activeCount: number } | null;
       latestGate: { type: string; status: string } | null;
     }>;
     initClaudeDir: (projectId: string) => Promise<{ success: boolean; created: string[]; error?: string }>;
