@@ -28,6 +28,8 @@ export interface TaskRecord {
   tags: string | null;
   estimatedHours: number | null;
   actualHours: number | null;
+  startedAt: string | null;
+  completedAt: string | null;
   dependsOn: string[];
   createdAt: string;
   updatedAt: string;

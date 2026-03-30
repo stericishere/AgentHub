@@ -354,6 +354,8 @@
       "sprint": "Sprint",
       "estimatedHours": "預估工時",
       "actualHours": "實際工時",
+      "startedAt": "開始時間",
+      "completedAt": "完工時間",
       "createdAt": "建立時間",
       "dependencies": "依賴關係",
       "tags": "標籤",

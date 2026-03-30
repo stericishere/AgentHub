@@ -183,6 +183,14 @@ function formatDate(iso: string | null): string {
               <span class="meta-value">{{ task.actualHours != null ? task.actualHours + 'h' : '—' }}</span>
             </div>
             <div class="meta-item">
+              <span class="meta-label">{{ t("taskboard.detailPanel.startedAt") }}</span>
+              <span class="meta-value">{{ task.startedAt ? formatDate(task.startedAt) : '—' }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">{{ t("taskboard.detailPanel.completedAt") }}</span>
+              <span class="meta-value">{{ task.completedAt ? formatDate(task.completedAt) : '—' }}</span>
+            </div>
+            <div class="meta-item">
               <span class="meta-label">{{ t("taskboard.detailPanel.createdAt") }}</span>
               <span class="meta-value">{{ formatDate(task.createdAt) }}</span>
             </div>
