@@ -1,0 +1,19 @@
+# {專案名稱} — 專案文件索引
+
+> **最後更新**: {日期}
+> **用途**: Sprint 紀錄與歷史文件索引，Agent 依任務需求查閱對應文件
+
+---
+
+## 專案概述
+
+| 文件 | 說明 |
+|------|------|
+| `.knowledge/project-overview.md` | 專案概述（技術棧、架構決策、Sprint 進度） |
+| `.knowledge/postmortem-log.md` | 踩坑紀錄 |
+
+## Sprint 紀錄
+
+| Sprint | 提案書 | 開發計畫書 | 狀態 |
+|--------|--------|-----------|------|
+| 1 | `proposal/sprint1-proposal.md` | `proposal/sprint1-dev-plan.md` | 🔄 進行中 |

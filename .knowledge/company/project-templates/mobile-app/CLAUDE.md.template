@@ -90,16 +90,19 @@
 
 ## 專案文件索引
 
+> Sprint 紀錄與歷史文件見 **`.knowledge/file-index.md`**
+
+### 規範文件
+
 | 文件 | 說明 |
 |------|------|
-| `.knowledge/company-rules.md` | 共用開發規則 |
-| `.knowledge/team-workflow.md` | 共用工作流程 |
-| `.knowledge/project-overview.md` | 專案概述 |
-| `.knowledge/api-design.md` | API 設計 |
-| `.knowledge/feature-spec.md` | 功能規格 |
-| `.knowledge/acceptance-criteria.md` | 驗收標準 |
+| `.knowledge/company-rules.md` | 共用開發規則（必讀） |
+| `.knowledge/team-workflow.md` | 共用工作流程（必讀） |
+| `.knowledge/api-design.md` | API 設計（🔴 規範） |
+| `.knowledge/feature-spec.md` | 功能規格（🟡 規格） |
+| `.knowledge/acceptance-criteria.md` | 驗收標準（🟡 規格） |
 
-## 公司知識庫
+### 公司知識庫
 
 > **使用規則（company-rules.md 第 7 條）**：需要引用公司規範時，先檢查本地 `.knowledge/` 是否已有副本。若無，從下方來源路徑複製一份到 `.knowledge/` 再使用。不需要的規範不必複製。
 
