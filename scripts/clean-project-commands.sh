@@ -1,6 +1,5 @@
 #!/bin/bash
-# clean-project-commands.sh — 清除子專案本地的 skill 副本
-# 全域 skills 已安裝到 ~/.claude/commands/，子專案不需要本地副本
+# clean-project-commands.sh — 將子專案本地 Skills 強制同步到最新模板版本
 # 用法：bash scripts/clean-project-commands.sh <專案路徑>
 #   例：bash scripts/clean-project-commands.sh C:/projects/AgentGame
 
@@ -14,8 +13,7 @@ GLOBAL_SKILLS=(
   task-start task-done task-dispatch task-delegation task-approve task-status
   review pm-review gate-record spec-update
   pitfall-record pitfall-resolve sprint-proposal sprint-retro harness-audit
-  dev-plan product-diagnosis pre-deploy project-kickoff sprint-proposal
-  knowledge-feedback
+  dev-plan product-diagnosis pre-deploy project-kickoff knowledge-feedback
 )
 
 PROJECT_DIR="${1:-$(pwd)}"
@@ -26,12 +24,12 @@ if [ ! -d "$COMMANDS_DIR" ]; then
   exit 0
 fi
 
-echo "=== 清理子專案本地 Skills ==="
+echo "=== 同步子專案本地 Skills → 最新模板 ==="
 echo "專案：$PROJECT_DIR"
 echo ""
 
-REMOVED=0
 UPDATED=0
+SKIPPED=0
 
 for skill in "${GLOBAL_SKILLS[@]}"; do
   LOCAL="$COMMANDS_DIR/$skill.md"
@@ -41,22 +39,22 @@ for skill in "${GLOBAL_SKILLS[@]}"; do
     continue
   fi
 
-  # 如果本地有 disable-model-invocation，直接用模板覆蓋
-  if grep -q "disable-model-invocation" "$LOCAL" 2>/dev/null; then
-    if [ -f "$TEMPLATE" ]; then
-      cp "$TEMPLATE" "$LOCAL"
-      echo "↻  更新（移除 disable-model-invocation）：$skill"
-      ((UPDATED++))
-    else
-      rm "$LOCAL"
-      echo "✕  移除（無對應模板）：$skill"
-      ((REMOVED++))
-    fi
+  if [ ! -f "$TEMPLATE" ]; then
+    echo "⚠️  跳過 $skill（模板不存在）"
+    ((SKIPPED++))
+    continue
+  fi
+
+  # 強制同步：只要本地有就覆蓋成最新模板
+  if cmp -s "$LOCAL" "$TEMPLATE"; then
+    ((SKIPPED++))
+  else
+    cp "$TEMPLATE" "$LOCAL"
+    echo "↻  同步：$skill"
+    ((UPDATED++))
   fi
 done
 
 echo ""
 echo "=== 完成 ==="
-echo "更新：$UPDATED  移除：$REMOVED"
-echo ""
-echo "子專案現在將優先使用本地更新版本，全域 ~/.claude/commands/ 作為備援。"
+echo "同步：$UPDATED  已是最新：$SKIPPED"
