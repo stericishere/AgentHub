@@ -3,6 +3,8 @@
 > 本文件是地圖，不是百科全書。詳細規範見索引指向的 .knowledge/ 文件。
 > **所有 Agent 執行任務前必須先閱讀本文件，再依索引查閱對應文件。**
 
+> 🚀 **首次 clone 後請執行**：`bash scripts/install-skills.sh`（將公司級 Skills 安裝到全域 `~/.claude/commands/`）
+
 ---
 
 ## 專案簡介
