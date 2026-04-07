@@ -1,7 +1,6 @@
 ---
 name: task-approve
 description: Mark a task as done after L1 review passes
-disable-model-invocation: true
 allowed-tools: Read, Edit, Glob
 ---
 

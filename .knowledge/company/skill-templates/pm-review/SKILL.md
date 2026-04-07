@@ -1,7 +1,6 @@
 ---
 name: pm-review
 description: PM reviews gate submission with 6-item checklist and recommendation
-disable-model-invocation: true
 allowed-tools: Read, Edit, Glob, Grep
 ---
 

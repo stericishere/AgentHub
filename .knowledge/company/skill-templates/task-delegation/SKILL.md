@@ -1,7 +1,6 @@
 ---
 name: task-delegation
 description: Create task breakdown in dev plan section 6 and generate .tasks/ files
-disable-model-invocation: true
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 

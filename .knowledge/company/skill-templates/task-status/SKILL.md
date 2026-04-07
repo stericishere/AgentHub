@@ -1,7 +1,6 @@
 ---
 name: task-status
 description: Update task status and append event log in .tasks/ file
-disable-model-invocation: true
 allowed-tools: Read, Edit, Glob
 ---
 

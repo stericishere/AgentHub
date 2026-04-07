@@ -1,7 +1,6 @@
 ---
 name: project-kickoff
 description: Initialize new project with CLAUDE.md, .knowledge/ structure, and company rules
-disable-model-invocation: true
 allowed-tools: Read, Write, Glob, Bash
 ---
 

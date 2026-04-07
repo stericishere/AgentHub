@@ -1,7 +1,6 @@
 ---
 name: gate-record
 description: Record a gate review decision in the dev plan section 10
-disable-model-invocation: true
 allowed-tools: Read, Edit, Glob
 ---
 

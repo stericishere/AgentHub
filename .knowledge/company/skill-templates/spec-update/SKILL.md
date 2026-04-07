@@ -1,7 +1,6 @@
 ---
 name: spec-update
 description: 規範文件更新 SOP — 版本號遞增 + 變更記錄 + 影響範圍通知
-disable-model-invocation: true
 allowed-tools: Read, Edit, Glob, Grep, Bash
 ---
 

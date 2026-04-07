@@ -1,7 +1,6 @@
 ---
 name: dev-plan
 description: Generate a development plan with task breakdown and section 10 tracking tables
-disable-model-invocation: true
 allowed-tools: Read, Write, Glob, Grep
 ---
 

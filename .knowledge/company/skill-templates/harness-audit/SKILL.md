@@ -1,7 +1,6 @@
 ---
 name: harness-audit
 description: Periodic Harness health audit based on 7 design principles
-disable-model-invocation: true
 allowed-tools: Read, Glob, Grep, Bash
 ---
 

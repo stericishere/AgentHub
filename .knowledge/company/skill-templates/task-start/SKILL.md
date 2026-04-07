@@ -1,7 +1,6 @@
 ---
 name: task-start
 description: Mark a task as in_progress when agent begins working
-disable-model-invocation: true
 allowed-tools: Read, Edit, Glob
 ---
 

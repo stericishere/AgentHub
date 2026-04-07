@@ -1,7 +1,6 @@
 ---
 name: task-done
 description: Mark a task as in_review (pending L1 review) and record in dev plan section 10
-disable-model-invocation: true
 allowed-tools: Read, Edit, Glob
 ---
 

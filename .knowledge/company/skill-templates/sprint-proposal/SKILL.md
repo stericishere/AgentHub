@@ -1,7 +1,6 @@
 ---
 name: sprint-proposal
 description: Generate a sprint proposal document with scope, risks, and G0 checklist
-disable-model-invocation: true
 allowed-tools: Read, Write, Glob, Grep
 ---
 
