@@ -66,13 +66,15 @@ AgentHub 的思路是：**用架構約束取代文字祈禱**。
 
 可重複使用的工作流程模板，Agent 執行時自動載入對應指引。
 
-- `/sprint-proposal` — Sprint 提案書生成
+- `/sop-execute` — L2 執行 SOP：強制規範載入 → 實作 → 驗收確認
+- `/sop-plan` — L1 計畫 SOP：上下文載入 → 複雜度評估 → Plan Mode 決策 → 任務拆解
+- `/sop-review` — L1 審查 SOP：載入規範 → Code Review → 核准或退回
+- `/sop-deploy` — 部署 SOP：品質 Checklist → Pre-deploy → Gate G5
 - `/task-dispatch` — 老闆一鍵建立任務，自動寫入計畫書
 - `/review` — 自動偵測步驟，選擇對應 Review 類型
-- `/gate-record` — Gate 審核紀錄，三層審核鏈（L1→PM→老闆）
 - `/pre-deploy` — 部署前自動檢查（CI / 環境變數 / Docker）
 - `/harness-audit` — 週期性健康掃描，七大原則逐項評分
-- ...共 **23 個內建 Skill**
+- ...共 **24 個內建 Skill**
 
 ![Harness Skills](docs/screenshots/08-harness-skill.jpg)
 
@@ -80,9 +82,9 @@ AgentHub 的思路是：**用架構約束取代文字祈禱**。
 
 不是事後提醒，是當場攔截。Agent 做危險操作時即時阻擋。
 
-- **PreToolUse**：執行指令前檢查（禁止 kill-port / --no-verify / force push main）
+- **PreToolUse**：執行指令前檢查（禁止 kill-port / --no-verify / force push main / 不合規的 commit 訊息）
 - **PostToolUse**：修改檔案後提醒（改了核心服務 → 強制同步 .knowledge/ 文件）
-- **Stop**：結束前驗證（測試 + 型別檢查必須通過，否則 Agent 不准停）
+- **Stop**：結束前驗證（測試 + 型別檢查必須通過；同時偵測全域 Skill 是否已安裝）
 
 ![Harness Hooks](docs/screenshots/09-harness-hook.jpg)
 
@@ -317,7 +319,10 @@ cd AgentHub
 # 3. 安裝依賴
 npm install
 
-# 4. 啟動開發模式
+# 4. 安裝全域 Skills（一次性設定）
+bash scripts/install-skills.sh
+
+# 5. 啟動開發模式
 npm run dev
 ```
 
@@ -379,12 +384,14 @@ AgentHub 的設計理念來自 **Claude Code Mastery** 課程中的 Harness Engi
 **任務看板**
 - 五欄看板：Created → Assigned → In Progress → In Review → Done
 - Agent 在子專案透過 `/task-start`、`/task-done`、`/task-approve` Skill 更新狀態
-- `.tasks/*.md` 檔案變更 → chokidar 偵測 → markdown-parser 解析 → DB 同步 → GUI 即時更新
+- 任務檔案採 Sprint 子目錄規範：`.tasks/sprint-{N}/TN-xxx.md`
+- 檔案變更 → chokidar 偵測 → markdown-parser 解析 → DB 同步 → GUI 即時更新
 
 **Harness 系統**
-- **23 個 Skill 模板**：Sprint 提案、任務派工、Code Review、Gate 紀錄、部署前檢查等
-- **5 個 Hook 模板**：forbidden-commands（危險指令攔截）、stop-validator（結束前驗證測試+型別檢查）、g1/g4/g5 品質關卡檢查
-- 建立專案時自動部署 Skill 和 Hook 到子專案 `.claude/` 目錄
+- **24 個 Skill 模板**：SOP 強制執行（sop-plan / sop-execute / sop-review / sop-deploy）、Sprint 提案、任務派工、Code Review、Gate 紀錄、部署前檢查等
+- **6 個 Hook 模板**：forbidden-commands（危險指令攔截）、git-commit-check（Conventional Commits 格式驗證）、stop-validator（結束前驗證測試+型別檢查）、g1/g4/g5 品質關卡檢查
+- Skills 透過 `scripts/install-skills.sh` 安裝到全域 `~/.claude/commands/`，無需每個專案重複部署
+- Hook 在建立子專案時自動部署到 `.claude/` 目錄
 - GUI 可瀏覽、新增、編輯 Hook，支援 global / project 雙範疇
 
 **Gate 品質關卡**

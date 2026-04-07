@@ -66,13 +66,15 @@ Just like a race car needs more than a great engine — it needs seatbelts, guar
 
 Reusable workflow templates that automatically load the relevant guidance when an Agent runs them.
 
-- `/sprint-proposal` — Sprint proposal generation
+- `/sop-execute` — L2 execution SOP: mandatory spec loading → implement → acceptance verification
+- `/sop-plan` — L1 planning SOP: context loading → complexity analysis → Plan Mode decision → task breakdown
+- `/sop-review` — L1 review SOP: load standards → code review → approve or reject
+- `/sop-deploy` — Deploy SOP: quality checklist → pre-deploy → Gate G5
 - `/task-dispatch` — Boss creates a task with one command, automatically written to the dev plan
 - `/review` — Auto-detects the step and selects the appropriate review type
-- `/gate-record` — Gate audit records with a three-tier review chain (L1 → PM → Boss)
 - `/pre-deploy` — Pre-deployment automated checks (CI / environment variables / Docker)
 - `/harness-audit` — Periodic health scan scoring against seven core principles
-- ...a total of **23 built-in Skills**
+- ...a total of **24 built-in Skills**
 
 ![Harness Skills](docs/screenshots/08-harness-skill.jpg)
 
@@ -80,9 +82,9 @@ Reusable workflow templates that automatically load the relevant guidance when a
 
 Not after-the-fact reminders — real-time blocking. Dangerous operations are stopped the moment they happen.
 
-- **PreToolUse**: checks before command execution (blocks kill-port / --no-verify / force push main)
+- **PreToolUse**: checks before command execution (blocks kill-port / --no-verify / force push main / malformed commit messages)
 - **PostToolUse**: alerts after file modification (if a core service changes, forces .knowledge/ doc sync)
-- **Stop**: validates before finishing (tests + type checks must pass, or the Agent cannot stop)
+- **Stop**: validates before finishing (tests + type checks must pass, or the Agent cannot stop; also detects missing global Skills)
 
 ![Harness Hooks](docs/screenshots/09-harness-hook.jpg)
 
@@ -317,7 +319,10 @@ cd AgentHub
 # 3. Install dependencies
 npm install
 
-# 4. Start in development mode
+# 4. Install Skills globally (one-time setup)
+bash scripts/install-skills.sh
+
+# 5. Start in development mode
 npm run dev
 ```
 
@@ -383,12 +388,14 @@ Covers 8 modules and 23 chapters, from Claude Code fundamentals to the five-stag
 **Task Board**
 - Five-column kanban: Created → Assigned → In Progress → In Review → Done
 - Agents update status in sub-projects via `/task-start`, `/task-done`, and `/task-approve` Skills
-- `.tasks/*.md` file changes → chokidar detects → markdown-parser parses → DB syncs → GUI updates live
+- Task files follow Sprint subdirectory convention: `.tasks/sprint-{N}/TN-xxx.md`
+- File changes → chokidar detects → markdown-parser parses → DB syncs → GUI updates live
 
 **Harness System**
-- **23 Skill templates**: Sprint proposals, task dispatch, Code Review, Gate records, pre-deployment checks, and more
-- **5 Hook templates**: forbidden-commands (dangerous command blocking), stop-validator (validates tests + type checks before stopping), g1/g4/g5 quality gate checks
-- Skills and Hooks are automatically deployed to the sub-project's `.claude/` directory on project creation
+- **24 Skill templates**: SOP enforcement (sop-plan / sop-execute / sop-review / sop-deploy), Sprint proposals, task dispatch, Code Review, Gate records, pre-deployment checks, and more
+- **6 Hook templates**: forbidden-commands (dangerous command blocking), git-commit-check (Conventional Commits validation), stop-validator (validates tests + type checks before stopping), g1/g4/g5 quality gate checks
+- Skills are installed globally to `~/.claude/commands/` via `scripts/install-skills.sh` — no per-project duplication needed
+- Hooks are automatically deployed to the sub-project's `.claude/` directory on project creation
 - The GUI lets you browse, add, and edit Hooks, with support for both global and project scopes
 
 **Gate Quality Checkpoints**
