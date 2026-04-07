@@ -20,7 +20,7 @@ allowed-tools: Read, Write, Glob, Grep
 ## 執行步驟
 
 1. 讀取提案書範本：
-!`cat .knowledge/company/templates/sprint-proposal.md.template 2>/dev/null || echo "範本未找到，使用預設格式"`
+!`cat .knowledge/templates/sprint-proposal.md.template 2>/dev/null || echo "範本未找到，使用預設格式"`
 
 2. 讀取現有提案書參考格式：
 !`ls proposal/sprint*-proposal.md 2>/dev/null | tail -1 | xargs cat 2>/dev/null | head -30 || echo "無既有提案書"`
@@ -35,5 +35,5 @@ allowed-tools: Read, Write, Glob, Grep
    - G0 審核區塊（空白待填）
 
 ## 產出格式
-嚴格遵循 `.knowledge/company/templates/sprint-proposal.md.template` 的結構。
+嚴格遵循 `.knowledge/templates/sprint-proposal.md.template` 的結構。
 若範本不存在，遵循 `proposal/` 下既有提案書的格式。
