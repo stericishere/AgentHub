@@ -13,7 +13,8 @@ GLOBAL_SKILLS=(
   task-start task-done task-dispatch task-delegation task-approve task-status
   review pm-review gate-record spec-update
   pitfall-record pitfall-resolve sprint-proposal sprint-retro harness-audit
-  dev-plan product-diagnosis pre-deploy project-kickoff knowledge-feedback
+  dev-plan product-diagnosis pre-deploy project-kickoff
+  sprint-close
 )
 
 PROJECT_DIR="${1:-$(pwd)}"
@@ -30,14 +31,11 @@ echo ""
 
 UPDATED=0
 SKIPPED=0
+ADDED=0
 
 for skill in "${GLOBAL_SKILLS[@]}"; do
   LOCAL="$COMMANDS_DIR/$skill.md"
   TEMPLATE="$TEMPLATE_DIR/$skill/SKILL.md"
-
-  if [ ! -f "$LOCAL" ]; then
-    continue
-  fi
 
   if [ ! -f "$TEMPLATE" ]; then
     echo "⚠️  跳過 $skill（模板不存在）"
@@ -45,7 +43,15 @@ for skill in "${GLOBAL_SKILLS[@]}"; do
     continue
   fi
 
-  # 強制同步：只要本地有就覆蓋成最新模板
+  if [ ! -f "$LOCAL" ]; then
+    # 新增：模板有但專案沒有，補進去
+    cp "$TEMPLATE" "$LOCAL"
+    echo "✓  新增：$skill"
+    ((ADDED++))
+    continue
+  fi
+
+  # 更新：本地有但內容不同
   if cmp -s "$LOCAL" "$TEMPLATE"; then
     ((SKIPPED++))
   else
@@ -57,4 +63,4 @@ done
 
 echo ""
 echo "=== 完成 ==="
-echo "同步：$UPDATED  已是最新：$SKIPPED"
+echo "新增：$ADDED  同步：$UPDATED  已是最新：$SKIPPED"
