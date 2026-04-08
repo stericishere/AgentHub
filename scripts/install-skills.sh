@@ -27,6 +27,11 @@ GLOBAL_SKILLS=(
   pitfall-resolve
   sprint-proposal
   sprint-retro
+  sprint-close
+  project-kickoff
+  dev-plan
+  pre-deploy
+  product-diagnosis
   harness-audit
 )
 

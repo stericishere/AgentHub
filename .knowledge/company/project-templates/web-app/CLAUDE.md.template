@@ -68,6 +68,12 @@
 > 以下指令已部署到 `.claude/commands/`。
 > **使用方式**：讀取對應的 `.claude/commands/{指令名}.md` 檔案，依照其中的步驟執行。
 >
+> ⚠️ **SOP 強制規則（違反視同未完成任務）**：
+> - L2 開始執行任務 → 必須使用 `/sop-execute`，不得直接呼叫 `/task-start`
+> - L1 開始規劃任務 → 必須使用 `/sop-plan`，不得直接呼叫 `/task-delegation`
+> - L1 進行 Code Review → 必須使用 `/sop-review`，不得直接呼叫 `/review`
+> - 任何部署動作 → 必須使用 `/sop-deploy`，不得直接呼叫 `/pre-deploy`
+>
 > **強制規則：遇到下列「使用時機」描述的場景時，必須執行對應指令，不得跳過或手動替代。**
 > 違反此規則等同未完成任務。
 
@@ -90,7 +96,27 @@
 | `/pitfall-record` | 記錄踩坑經驗 | 發現問題時立即記錄 |
 | `/pitfall-resolve` | 標記踩坑已解決 | 問題修復後 |
 | `/sprint-retro` | Sprint 回顧報告 | Sprint 結束時 |
+| `/sprint-close` | 結案 Sprint，merge 回主幹 | 老闆 + PM 確認所有 Gate 通過後 |
 | `/harness-audit` | Harness 健康度稽核 | 定期檢查 |
+| `/sop-plan` | L1 計畫模式 SOP（上下文載入 + Plan Mode 評估） | L1 收到任務分派後，開始規劃前 |
+| `/sop-execute` | L2 任務執行 SOP（規範強制載入 + 驗收確認） | L2 開始執行任務時 |
+| `/sop-review` | L1 Code Review SOP（規範對照 + 審核決策） | L1 進行 Code Review 時 |
+| `/sop-deploy` | 部署 SOP（品質 checklist + Gate G5） | 部署前 |
+| `/spec-update` | 規範文件更新（版本遞增 + 變更記錄） | 修改任何 .knowledge/specs/ 文件時 |
+
+## Git 版控流程（強制）
+
+> 詳細規範見 AgentHub `.knowledge/company/sop/git-flow.md`
+
+| 角色 | 操作 | 說明 |
+|------|------|------|
+| dev-plan 產出後 | `git checkout -b sprint-{N}` | 從主幹建立 Sprint branch |
+| task-start（循序） | 直接在 sprint-{N} commit | `並行組 = —` 的任務 |
+| task-start（並行） | `git checkout -b task/s{N}-T{id}-{slug}` | `並行組 = A/B/C...` 的任務 |
+| task-approve（並行） | merge task → sprint-{N}，刪 branch | code 進 sprint 後依賴才解鎖 |
+| sprint-close | merge sprint-{N} → 主幹，tag，清理 | 老闆 + PM 確認後執行 |
+
+**task-dispatch 必須標記 `| 並行組 |` 欄位**：`—` = 循序，`A/B/C` = 同組可並行。
 
 ## 專案文件索引
 
