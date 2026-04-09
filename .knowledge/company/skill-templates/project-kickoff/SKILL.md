@@ -40,13 +40,40 @@ PM 啟動新專案時使用，確保所有基礎結構就位。
    - 複製 `company-rules.md` → `.knowledge/company-rules.md`
    - 複製 `team-workflow.md` → `.knowledge/team-workflow.md`
 
-5. **Git 初始化**
+5. **建立 Roadmap**
 
-   5a. 檢查是否已有 git repo（`.git/` 目錄存在）：
+   5a. 建立 `proposal/` 目錄（若已存在則跳過）
+
+   5b. 建立 `proposal/roadmap.md`（若已存在則跳過）：
+   ```markdown
+   # {專案名稱} — 產品路線圖
+
+   ## 產品定位
+   > {一句話描述產品}
+
+   ## 目標用戶
+   > {描述}
+
+   ## 核心價值
+   > {描述}
+
+   ## 版本規劃
+
+   | Sprint | 主題 | 目標 | 狀態 |
+   |--------|------|------|------|
+   | Sprint 1 | {待定} | {待定} | 🔲 規劃中 |
+
+   ## 長期願景
+   > {描述}
+   ```
+
+6. **Git 初始化**
+
+   6a. 檢查是否已有 git repo（`.git/` 目錄存在）：
    - 已存在 → 跳過 `git init`
    - 不存在 → 執行 `git init`
 
-   5b. 建立 `.gitignore`（若已存在則跳過）：
+   6b. 建立 `.gitignore`（若已存在則跳過）：
    ```
    node_modules/
    dist/
@@ -58,23 +85,25 @@ PM 啟動新專案時使用，確保所有基礎結構就位。
    .DS_Store
    ```
 
-   5c. 執行初始 commit（若 working tree 有變更）：
+   6c. 執行初始 commit（若 working tree 有變更）：
    ```bash
    git add -A
    git commit -m "chore: project kickoff — {project-name}"
    ```
 
-6. **輸出下一步 Checklist**
+7. **輸出下一步 Checklist**
    ```
    ✅ 專案初始化完成
 
    Git：已初始化 ✅
    初始 commit：chore: project kickoff — {project-name} ✅
+   Roadmap：proposal/roadmap.md ✅
 
    下一步：
    - [ ] 填寫 CLAUDE.md 專案簡介佔位符
    - [ ] 填寫技術棧表格
-   - [ ] 建立 proposal/ 目錄
+   - [ ] 填寫 proposal/roadmap.md 產品定位
+   - [ ] 執行 /product-diagnosis 做 G0 前置診斷
    - [ ] 撰寫 Sprint 提案書（/sprint-proposal）
    - [ ] 執行 /dev-plan 建立 sprint branch
    ```
